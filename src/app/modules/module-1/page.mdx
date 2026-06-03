@@ -1,0 +1,82 @@
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Rocket, Clock, Brain, Wallet, Baby, ChevronRight, Lightbulb } from "lucide-react";
+
+# 模块一：AI 认知地基
+
+<Badge variant="outline">3 周</Badge> <Badge variant="secondary" className="ml-2">约 10 小时</Badge>
+
+## 这个模块要做什么
+
+<KeyPoint emoji="🎯">
+  在 3 周内，你将从「用过 AI 工具」跨越到「理解 AI 怎么工作并自己搭建一个 AI 应用」。
+</KeyPoint>
+
+**项目实战**：做一个可定制人设的 ChatGPT Web 应用。用户可以自定义 AI 的「人设」（比如「你是一个儿童教育专家」），调节温度和最大 Token 数，保存和加载对话历史。最后部署上线，生成一个可分享的链接。
+
+**核心认知**：AI 不是魔法。它不「知道」任何事，它只是在「猜下一个字」。理解了这一点，你就超过了 90% 的 AI 用户。
+
+## 每周概览
+
+<ConceptCard
+  title="第一周：AI 全景图——从图灵测试到 ChatGPT"
+  icon={Brain}
+  time="~3h"
+  explanation="建立全局认知。搞懂 AI、机器学习、深度学习、大语言模型的关系。理解 LLM 的「猜字游戏」本质。跑通第一个 API 调用。"
+  color="green"
+/>
+
+<ConceptCard
+  title="第二周：Token 与上下文——AI 的「语言」和「记忆」"
+  icon={Clock}
+  time="~3.5h"
+  explanation="深入理解 Token 机制和上下文窗口。用 Tokenizer 可视化工具看 AI 怎么「读」文字。理解为什么长对话会「失忆」。搭建 Streamlit 界面框架。"
+  color="blue"
+/>
+
+<ConceptCard
+  title="第三周：打造你自己的 ChatGPT"
+  icon={Rocket}
+  time="~3.5h"
+  explanation="动手完成完整的聊天应用。支持自定义 System Prompt、保存对话、参数调节、Token 计数。部署上线，生成可分享链接。"
+  color="orange"
+/>
+
+## 你需要准备什么
+
+| 工具 | 用途 | 获取方式 |
+|------|------|---------|
+| Python 3.9+ | 运行环境 | 你应该已经有了 |
+| Claude API Key 或 OpenAI API Key | 调用 AI 模型 | console.anthropic.com 或 platform.openai.com |
+| Streamlit | 把 Python 脚本变成 Web 应用 | `pip install streamlit` |
+| 一个代码编辑器 | 写代码 | 推荐 Cursor 或 VS Code |
+
+## 学完这个模块你能做到
+
+<StepGuide
+  steps={[
+    {
+      title: "独立搭建 AI 聊天应用",
+      description: "从零写出一个带人设定制、对话保存、Token 计数的完整 ChatGPT 应用。"
+    },
+    {
+      title: "讲清楚 AI 核心概念",
+      description: "给不懂技术的人讲清楚 Token、上下文窗口、Temperature 是什么。"
+    },
+    {
+      title: "理解 API 商业模式",
+      description: "会算 API 成本，理解为什么通用聊天免费而垂直应用可以收费。"
+    },
+    {
+      title: "一句话总结 AI 本质",
+      description: "「AI 就是一个猜下一个字的超级鹦鹉」——精准且通俗。"
+    }
+  ]}
+/>
+
+<Separator className="my-8" />
+
+<TipBox title="给第一次接触 API 的你" icon={Lightbulb}>
+  如果你之前只用过 ChatGPT 网页版，API 可能会让你觉得陌生。简单说：**网页版 = 餐厅吃饭，API = 自己买菜做饭**。API 更灵活但需要你写代码调用。本模块会带着你一步步来。
+</TipBox>

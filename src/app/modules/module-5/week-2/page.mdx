@@ -1,0 +1,96 @@
+import { Badge } from "@/components/ui/badge";
+import { Brain, Target, Zap, Sparkles, Lightbulb, AlertTriangle, Info, Play, BookOpen, Code2, ExternalLink, Rocket } from "lucide-react";
+
+# 第二周：MVP 开发——用 AI 高效写代码
+
+<Badge variant="outline">模块五 · 第 2/4 周</Badge> <Badge variant="secondary" className="ml-2">预计 4 小时</Badge>
+
+## 本周目标
+
+用 Cursor / Claude Code 等 AI 编程工具加速开发。你设计架构，AI 填代码细节，你审核修正。目标 6 小时内做出核心功能可用的版本。
+
+**本周里程碑**：MVP 核心功能可运行，自己能用它完成一个完整任务。
+
+---
+
+## 1. AI 辅助编程的核心模式
+
+<ImageCard
+  src="/images/concepts/ai-coding-workflow.png"
+  alt="FLUX 生成：AI 辅助编程工作流"
+  caption="开发者坐在全息屏前——左边是人类设计的架构图，中间是 AI 生成并自动组装的代码块，每一块都被人类审核后才放行。这不是 AI 替代程序员，这是程序员 × AI 的协作舞蹈。"
+/>
+
+<ImageCard
+  src="/images/diagrams/mvp-workflow.svg"
+  alt="MVP 开发工作流"
+  caption="MVP 的正确打开方式：想法验证→只做核心功能→AI加速写代码→部署上线。不是做100个功能，是把1个功能做到用户愿意用。"
+/>
+
+### AI 编程的三层分工
+
+<ConceptCard title="你（架构师）" icon={Brain} explanation="设计整体架构、选择技术方案、定义组件接口、做产品决策。AI 替代不了的经验判断。" color="blue" />
+<ConceptCard title="AI（10x 执行者）" icon={Zap} explanation="写具体代码实现、生成测试、debug、解释代码。你的效率放大器，不是替代品。" color="orange" />
+<ConceptCard title="你（审核者）" icon={Target} explanation="读 AI 生成的代码、理解逻辑、测试功能、确保安全。AI 写代码很快，但你要为每一行负责。" color="purple" />
+
+<TipBox title="高效 Prompt 技巧" icon={Lightbulb}>
+  1. **描述输入输出**：「这个函数接收一个 PDF 文件路径，返回分块后的文本列表」
+  2. **给上下文**：「我们用 Streamlit，Python 3.10，项目结构是...」
+  3. **分步来**：不要说「帮我做整个产品」，说「先做这个页面，再做那个 API」
+</TipBox>
+
+---
+
+## 2. 动手实践
+
+### MVP 开发流程
+
+```
+第1小时：搭框架（界面骨架 + 核心数据流）
+第2-3小时：实现核心功能（RAG 检索 + LLM 回答）
+第4小时：加基本 UI（上传文档 + 显示答案）
+第5小时：加错误处理 + 基本优化
+第6小时：自己完整测试一遍
+```
+
+### 用 AI 加速的具体方式
+
+```markdown
+# 给 Claude Code / Cursor 的 Prompt 示例
+
+## 好的 Prompt:
+「在 app.py 中，用 Streamlit 创建一个文件上传组件，
+支持 PDF 和 TXT 格式。上传后读取内容，显示文件大小和页数。
+用 st.file_uploader，参考 Streamlit 官方文档的写法。」
+
+## 不好的 Prompt:
+「帮我做一个上传功能」
+```
+
+<WarningBox title="使用 AI 编程的注意事项">
+  - **不要粘贴你不理解的代码**——让 AI 解释每一段
+  - **AI 可能引入安全漏洞**——检查所有 API Key 处理和文件操作
+  - **先让 AI 写测试，再让它写实现**——这是 AI 编程的最佳实践
+  - **小步提交**——每实现一个功能就 git commit，方便回退
+</WarningBox>
+
+---
+
+## 3. 三视角复盘
+
+<ReviewPanel type="principle">
+AI 编程工具让单人开发效率提升 3-5 倍。但核心能力依然是：架构设计、问题拆解、代码审查、产品判断。这些不是 AI 能替代的——至少现在还不是。
+</ReviewPanel>
+
+<ReviewPanel type="money">
+6 小时的 MVP < 一个周末。完成比完美重要 100 倍。你的第一个版本不需要好看、不需要完善——只需要「能用」。用户反馈才是你的导航仪。
+</ReviewPanel>
+
+<ReviewPanel type="education">
+教孩子的不是「怎么写代码」（AI 会写），而是「怎么把一个大问题拆成小步骤」「怎么判断一个方案好不好」「怎么看懂别人写的代码对不对」。这些是 AI 时代的编程素养。
+</ReviewPanel>
+
+---
+
+## 下周预告
+下周把做好的 MVP 部署上线——让它不只在你的电脑上能跑，让全世界都能访问。

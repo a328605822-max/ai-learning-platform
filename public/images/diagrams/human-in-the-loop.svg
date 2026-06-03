@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 340" fill="none">
+  <rect width="800" height="340" rx="14" fill="#0f172a"/>
+  <text x="400" y="35" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="17" font-weight="bold">Human-in-the-Loop 安全架构</text>
+
+  <!-- Agent -->
+  <rect x="30" y="60" width="180" height="60" rx="8" fill="#3a1a3a" stroke="#a855f7"/>
+  <text x="120" y="85" text-anchor="middle" fill="#d8b4fe" font-family="sans-serif" font-size="13" font-weight="bold">🤖 Agent</text>
+  <text x="120" y="105" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="11">想要执行操作</text>
+
+  <text x="230" y="95" fill="#6366f1" font-family="sans-serif" font-size="18">→</text>
+
+  <!-- Risk check -->
+  <rect x="260" y="55" width="190" height="70" rx="8" fill="#3a2a0a" stroke="#eab308"/>
+  <text x="355" y="78" text-anchor="middle" fill="#fde68a" font-family="sans-serif" font-size="12" font-weight="bold">⚠️ 风险评估</text>
+  <text x="355" y="98" text-anchor="middle" fill="#fbbf24" font-family="monospace" font-size="10">只读操作? 涉及金钱?</text>
+  <text x="355" y="115" text-anchor="middle" fill="#fbbf24" font-family="monospace" font-size="10">发送外部? 删除数据?</text>
+
+  <!-- Safe path -->
+  <text x="470" y="80" fill="#22c55e" font-family="sans-serif" font-size="18">→</text>
+  <rect x="500" y="60" width="150" height="50" rx="8" fill="#1a3a1a" stroke="#22c55e"/>
+  <text x="575" y="82" text-anchor="middle" fill="#86efac" font-family="sans-serif" font-size="12" font-weight="bold">✅ 低风险</text>
+  <text x="575" y="100" text-anchor="middle" fill="#4ade80" font-family="sans-serif" font-size="11">自动执行</text>
+
+  <!-- Dangerous path -->
+  <text x="470" y="130" fill="#ef4444" font-family="sans-serif" font-size="18">→</text>
+  <rect x="500" y="115" width="150" height="50" rx="8" fill="#3a1a1a" stroke="#ef4444"/>
+  <text x="575" y="137" text-anchor="middle" fill="#fca5a5" font-family="sans-serif" font-size="12" font-weight="bold">🔴 高风险</text>
+  <text x="575" y="155" text-anchor="middle" fill="#f87171" font-family="sans-serif" font-size="11">需要人类确认</text>
+
+  <!-- Human approval -->
+  <text x="670" y="130" fill="#6366f1" font-family="sans-serif" font-size="18">→</text>
+  <rect x="30" y="190" width="740" height="60" rx="8" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+  <text x="400" y="215" text-anchor="middle" fill="#93c5fd" font-family="sans-serif" font-size="13">👤 人类确认界面</text>
+  <text x="400" y="238" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="12">"Agent 想要：发送邮件给 boss@company.com，主题：项目进度更新。允许吗？"</text>
+
+  <text x="400" y="285" text-anchor="middle" fill="#6366f1" font-family="sans-serif" font-size="18">↓</text>
+
+  <!-- Result -->
+  <rect x="250" y="295" width="300" height="35" rx="8" fill="#1a3a1a" stroke="#22c55e"/>
+  <text x="400" y="318" text-anchor="middle" fill="#86efac" font-family="sans-serif" font-size="12" font-weight="bold">[批准] → 执行 ✅  |  [拒绝] → 不执行 ❌</text>
+
+</svg>

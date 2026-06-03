@@ -1,0 +1,397 @@
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Brain, Wallet, Baby, Lightbulb, AlertTriangle, CheckCircle2, Info } from "lucide-react";
+
+# 第三周：打造你自己的 ChatGPT
+
+<Badge variant="outline">模块一 · 第 3/3 周</Badge> <Badge variant="secondary">预计 3.5 小时</Badge>
+
+## 本周目标
+
+把前两周的概念和界面整合起来，完成一个完整的、可部署上线的 AI 聊天应用。支持人设定制、对话历史管理、Token 计数和费用估算。
+
+**本周里程碑**：完整的 AI 聊天应用部署上线，可以发链接给朋友使用。
+
+---
+
+## 1. 核心概念讲解
+
+### 1.1 System Prompt：AI 的「人设说明书」
+
+System Prompt 是你给 AI 设定的「角色」和「行为准则」。它不是用户能看到的东西，但它是影响 AI 行为的最重要手段。
+
+**好的 System Prompt vs 坏的 System Prompt：**
+
+```
+❌ 坏的 System Prompt（太模糊）：
+「帮用户回答问题」
+
+✅ 好的 System Prompt（具体、有场景、有边界）：
+「你是一个有 10 年经验的 Python 编程导师。你的教学风格是：
+1. 用通俗的类比解释概念，避免术语轰炸
+2. 每个概念配一个可运行的代码示例
+3. 当学生困惑时，先问他们'你觉得是为什么'再给出答案
+4. 如果问题超出编程范围，礼貌地引导回编程话题
+5. 使用中文回复，代码注释也用中文」
+```
+
+<TipBox title="System Prompt 设计原则">
+  1. **角色具体化**：不要说「你是一个助手」，说「你是一个有 5 年经验的新媒体运营专家」
+  2. **行为边界清晰**：告诉 AI 什么可以做什么不可以做
+  3. **输出格式指定**：需要什么格式的输出？多长？什么语气？
+  4. **不断迭代**：先用，发现 AI 表现不好就调整 System Prompt
+</TipBox>
+
+### 1.2 对话状态管理
+
+在 API 调用模式下，AI 本身没有「记忆」——每次调用都是独立的。对话历史需要由你的代码来维护。
+
+```
+用户："我叫小王"  →  你的代码保存：{role: "user", content: "我叫小王"}
+AI："你好小王！"  →  你的代码保存：{role: "assistant", content: "你好小王！"}
+用户："我叫什么？" →  你的代码把上面两条历史 + 新问题一起发给 API
+AI："你叫小王！"  →  AI 能回答出来，因为它看到了历史记录
+```
+
+**这就是为什么你需要手动管理对话历史。** 如果一个对话已经很长，超出了上下文窗口，你需要智能地裁剪——保留最近的消息 + System Prompt + 重要的早期消息。
+
+### 1.3 部署：让全世界看到你的作品
+
+我们使用 Streamlit Cloud（免费）来部署。也可以使用 Railway 或自己租服务器。选择 Streamlit Cloud 因为它最简单——连接 GitHub 仓库，自动部署。
+
+---
+
+## 2. 动手实践
+
+### 2.1 完成完整的 AI 聊天应用
+
+在上周的 `app.py` 基础上，接入真实的 API。以下是完整代码：
+
+```python
+import streamlit as st
+import os
+from dotenv import load_dotenv
+from anthropic import Anthropic
+
+load_dotenv()
+
+# 页面配置
+st.set_page_config(page_title="我的 AI 助手", page_icon="🤖")
+st.title("🤖 我的 AI 助手")
+
+# ---- API 客户端 ----
+client = Anthropic(api_key=os.getenv("CLAUDE_API_KEY"))
+
+# ---- 侧边栏 ----
+with st.sidebar:
+    st.header("⚙️ 参数设置")
+    
+    # System Prompt
+    system_prompt = st.text_area(
+        "System Prompt（AI 的人设）",
+        value="你是一个友好的 AI 助手，乐于帮助用户解决问题。",
+        height=120
+    )
+    
+    # AI 服务商选择
+    provider = st.selectbox(
+        "AI 服务商",
+        options=["DeepSeek（国内推荐）", "智谱 GLM（免费额度）", "OpenAI", "Claude"],
+        index=0,
+        help="国内用户推荐 DeepSeek 或智谱 GLM，无需代理"
+    )
+
+    # 根据服务商显示对应模型
+    model_map = {
+        "DeepSeek（国内推荐）": ["deepseek-chat", "deepseek-reasoner"],
+        "智谱 GLM（免费额度）": ["glm-4-flash", "glm-4-plus"],
+        "OpenAI": ["gpt-4o-mini", "gpt-4o"],
+        "Claude": ["claude-haiku-4-5-20251001", "claude-sonnet-4-6-20250514"],
+    }
+    model = st.selectbox("模型", options=model_map[provider])
+
+    # Temperature
+    temperature = st.slider("Temperature", 0.0, 1.0, 0.7, 0.1)
+
+<ImageCard
+  src="/images/concepts/temperature.png"
+  alt="Temperature 效果谱系"
+  caption="调这个滑块就像调收音机——往左拧，AI 像个老学究，每句话都一丝不苟（temperature=0）；往右拧，AI 开始放飞自我，天马行空什么话都敢说（temperature=1）。日常使用推荐 0.3-0.7 之间，既有料又不离谱。"
+/>
+    
+    # Max tokens
+    max_tokens = st.slider("最大回复长度", 50, 2000, 500, 50)
+    
+    st.divider()
+    
+    # 清除对话
+    if st.button("🗑️ 清除对话历史"):
+        st.session_state.messages = []
+        st.rerun()
+    
+    # Token 计数和费用估算
+    st.divider()
+    st.caption("💰 费用估算（非常粗略）")
+    
+    # 模型价格（每 1M tokens，价格随时变动，以官网为准）
+    prices = {
+        "deepseek-chat": {"input": 0.14, "output": 0.28},
+        "deepseek-reasoner": {"input": 0.55, "output": 2.19},
+        "glm-4-flash": {"input": 0, "output": 0},
+        "glm-4-plus": {"input": 0.7, "output": 0.7},
+        "gpt-4o-mini": {"input": 0.15, "output": 0.60},
+        "gpt-4o": {"input": 2.50, "output": 10.0},
+        "claude-haiku-4-5-20251001": {"input": 0.25, "output": 1.25},
+        "claude-sonnet-4-6-20250514": {"input": 3.0, "output": 15.0},
+    }
+    model_price = prices.get(model, {"input": 0, "output": 0})
+
+# ---- 对话历史 ----
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# 显示历史消息
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+# ---- 用户输入处理 ----
+if prompt := st.chat_input("输入你的问题..."):
+    # 显示用户消息
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+    
+    # 构建 API 请求的 messages
+    # System prompt 作为第一条 system 消息
+    api_messages = []
+    for msg in st.session_state.messages:
+        api_messages.append({"role": msg["role"], "content": msg["content"]})
+    
+    # 调用 API
+    with st.chat_message("assistant"):
+        with st.spinner("思考中..."):
+            try:
+                response = client.messages.create(
+                    model=model,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    system=system_prompt,
+                    messages=api_messages
+                )
+                
+                ai_reply = response.content[0].text
+                st.markdown(ai_reply)
+                
+                # 显示 token 用量
+                usage = response.usage
+                input_tokens = usage.input_tokens
+                output_tokens = usage.output_tokens
+                
+                price = prices[model]
+                cost = (input_tokens * price["input"] + output_tokens * price["output"]) / 1_000_000
+                
+                st.caption(
+                    f"📊 输入：{input_tokens} tokens · "
+                    f"输出：{output_tokens} tokens · "
+                    f"本次费用：${cost:.6f}"
+                )
+                
+                # 保存 AI 回复
+                st.session_state.messages.append({"role": "assistant", "content": ai_reply})
+                
+            except Exception as e:
+                st.error(f"出错了：{e}")
+                st.caption("检查 API Key 是否正确、账户余额是否充足")
+```
+
+### 2.2 把代码组织得更好
+
+当代码超过 100 行后，建议拆分文件。创建一个更好的项目结构：
+
+```
+my-ai-app/
+├── .env                  # API Key（不要上传到 GitHub！）
+├── .gitignore            # 忽略 .env 和 venv
+├── requirements.txt      # 依赖列表
+├── app.py                # 主入口
+├── config.py             # 配置（模型、价格等）
+└── utils.py              # 工具函数（Token 估算等）
+```
+
+创建 `config.py`：
+
+```python
+# config.py
+PROVIDERS = {
+    "deepseek": {
+        "base_url": "https://api.deepseek.com",
+        "models": {
+            "deepseek-chat": {"display": "DeepSeek Chat（快速便宜）", "input_price": 0.14, "output_price": 0.28},
+            "deepseek-reasoner": {"display": "DeepSeek Reasoner（深度推理）", "input_price": 0.55, "output_price": 2.19},
+        }
+    },
+    "glm": {
+        "base_url": "https://open.bigmodel.cn/api/paas/v4/",
+        "models": {
+            "glm-4-flash": {"display": "GLM-4 Flash（免费）", "input_price": 0, "output_price": 0},
+            "glm-4-plus": {"display": "GLM-4 Plus（智能）", "input_price": 0.7, "output_price": 0.7},
+        }
+    },
+    "openai": {
+        "base_url": None,  # 默认
+        "models": {
+            "gpt-4o-mini": {"display": "GPT-4o Mini（性价比）", "input_price": 0.15, "output_price": 0.60},
+            "gpt-4o": {"display": "GPT-4o（更智能）", "input_price": 2.50, "output_price": 10.0},
+        }
+    },
+    "claude": {
+        "base_url": None,
+        "models": {
+            "claude-haiku-4-5-20251001": {"display": "Claude Haiku（快速便宜）", "input_price": 0.25, "output_price": 1.25},
+            "claude-sonnet-4-6-20250514": {"display": "Claude Sonnet（智能强大）", "input_price": 3.0, "output_price": 15.0},
+        }
+    },
+}
+
+DEFAULT_SYSTEM_PROMPT = "你是一个友好的 AI 助手，乐于帮助用户解决问题。"
+```
+
+创建 `requirements.txt`：
+
+```
+streamlit
+openai
+anthropic
+python-dotenv
+```
+
+### 2.3 部署到 Streamlit Cloud
+
+**步骤 1**：把代码推送到 GitHub
+
+```bash
+git init
+git add .
+git commit -m "我的第一个 AI 聊天应用"
+# 在 GitHub 上创建新仓库，然后：
+git remote add origin https://github.com/你的用户名/仓库名.git
+git push -u origin main
+```
+
+**步骤 2**：在 Streamlit Cloud 部署
+
+1. 访问 [share.streamlit.io](https://share.streamlit.io)
+2. 用 GitHub 账号登录
+3. 点击「New app」
+4. 选择你的仓库和 `app.py`
+5. 点击「Deploy」
+
+**步骤 3**：配置环境变量
+
+在 Streamlit Cloud 的 App Settings → Secrets 中添加：
+
+```toml
+CLAUDE_API_KEY = "sk-ant-xxx-你的key"
+```
+
+代码里把 `load_dotenv()` 替换为从 `st.secrets` 读取：
+
+```python
+# 修改 app.py 的开头部分
+api_key = os.getenv("CLAUDE_API_KEY") or st.secrets.get("CLAUDE_API_KEY")
+if not api_key:
+    st.error("请设置 CLAUDE_API_KEY")
+    st.stop()
+
+client = Anthropic(api_key=api_key)
+```
+
+<WarningBox title="安全提醒">
+  **绝对不要把 `.env` 文件提交到 GitHub！** 在 `.gitignore` 中添加：
+  ```
+  .env
+  venv/
+  __pycache__/
+  .streamlit/secrets.toml
+  ```
+  
+  如果 API Key 不小心泄露了，立即去 API 提供商的后台删除并重新生成。
+</WarningBox>
+
+---
+
+## 3. 模块一总结
+
+恭喜！你已经完成了 AI 学习的第一个模块。让我们回顾一下你学到了什么：
+
+### 你做出的东西
+- 一个可定制人设的 AI 聊天应用（可分享链接）
+
+### 你搞懂的概念
+<DataTable
+  headers={["概念", "一句话解释"]}
+  rows={[
+    ["LLM 的本质", "猜下一个字的超级机器，不是「知道」，是「预测」"],
+    ["Token", "AI 的阅读单位，中英文效率不同"],
+    ["Context Window", "AI 的短期记忆容量"],
+    ["Temperature", "AI 是严谨还是天马行空的旋钮"],
+    ["System Prompt", "给 AI 定规矩和人设"],
+    ["API 计费", "按 token 计费，输出比输入贵"],
+  ]}
+/>
+
+### 你的变现认知
+- 纯聊天不值钱，垂直场景值钱
+- System Prompt + 特定领域知识 = 垂直产品雏形
+- 成本核算是 AI 产品的第一课
+
+### 你的教育素材
+- 「AI 是会接话的鹦鹉」
+- 「Token 是 AI 的字块」
+- 「上下文窗口是 AI 的小脑子」
+
+---
+
+## 4. 三视角复盘
+
+<ReviewBox type="principle">
+
+### 原理视角
+
+这 3 周下来，我现在能说清：AI 不是魔法，它是在海量文本上训练出来的「概率预测机器」。它没有意识、没有理解、没有信念——它只是极其擅长「在给定上下文的情况下，猜最合理的下一个字」。
+
+</ReviewBox>
+
+<ReviewBox type="money">
+
+### 变现视角
+
+我做的这个聊天应用，如果只是聊天，没人会付钱。但如果我把 System Prompt 改成「专业小红书写手 + 10 条爆款文案模板 + 图片生成」——它就有了差异化。接下来模块二要学的 RAG 技术会让这个差异化更强。
+
+</ReviewBox>
+
+<ReviewBox type="education">
+
+### 教育视角
+
+我已经有了 3 个可以讲给未来孩子的 AI 故事：
+1. 「会接话的鹦鹉」—— AI 怎么说话的
+2. 「小脑子和大脑子」—— 上下文窗口
+3. 「严谨模式和创意模式」—— Temperature
+
+最好的教育是从有趣的类比开始，而不是从公式和代码开始。
+
+</ReviewBox>
+
+---
+
+## 5. 准备进入模块二
+
+模块二将让你跳出「纯聊天」，学习 RAG（检索增强生成）技术。你的 AI 将能「读」你的文档，然后基于文档内容回答问题——不再瞎编，而是有据可查。
+
+**模块二需要的新工具**：
+- `pip install chromadb` — 向量数据库
+- 一堆 PDF 或 Markdown 文档作为测试数据
+
+在进入模块二之前，确保模块一的项目已经可以运行并部署上线。这很重要——**完成比完美重要**。

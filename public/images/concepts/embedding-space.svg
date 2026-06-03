@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" fill="none">
+  <rect width="800" height="450" rx="14" fill="#0f172a"/>
+  <text x="400" y="35" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="18" font-weight="bold">Embedding 空间：语义相近的词语「坐标」也相近</text>
+
+  <!-- 2D coordinate plane -->
+  <line x1="60" y1="380" x2="740" y2="380" stroke="#475569" stroke-width="1"/>
+  <line x1="80" y1="60" x2="80" y2="380" stroke="#475569" stroke-width="1"/>
+  <text x="70" y="395" text-anchor="middle" fill="#64748b" font-size="10">0</text>
+
+  <!-- Grid lines -->
+  <line x1="60" y1="300" x2="740" y2="300" stroke="#1e293b" stroke-width="1"/>
+  <line x1="60" y1="220" x2="740" y2="220" stroke="#1e293b" stroke-width="1"/>
+  <line x1="60" y1="140" x2="740" y2="140" stroke="#1e293b" stroke-width="1"/>
+  <line x1="160" y1="60" x2="160" y2="380" stroke="#1e293b" stroke-width="1"/>
+  <line x1="240" y1="60" x2="240" y2="380" stroke="#1e293b" stroke-width="1"/>
+
+  <!-- Animal cluster -->
+  <circle cx="180" cy="130" r="50" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1" stroke-dasharray="4 2" opacity="0.6"/>
+  <text x="180" y="100" text-anchor="middle" fill="#60a5fa" font-family="sans-serif" font-size="11">🐱 动物</text>
+  <circle cx="165" cy="125" r="5" fill="#3b82f6"/><text x="175" y="130" fill="#94a3b8" font-size="10">猫</text>
+  <circle cx="195" cy="135" r="5" fill="#3b82f6"/><text x="205" y="140" fill="#94a3b8" font-size="10">狗</text>
+  <circle cx="175" cy="145" r="5" fill="#3b82f6"/><text x="185" y="150" fill="#94a3b8" font-size="10">兔子</text>
+
+  <!-- Tech cluster -->
+  <circle cx="560" cy="280" r="70" fill="#1a3a1a" stroke="#22c55e" stroke-width="1" stroke-dasharray="4 2" opacity="0.6"/>
+  <text x="560" y="240" text-anchor="middle" fill="#86efac" font-family="sans-serif" font-size="11">💻 科技</text>
+  <circle cx="540" cy="270" r="5" fill="#22c55e"/><text x="550" y="275" fill="#94a3b8" font-size="10">计算机</text>
+  <circle cx="580" cy="285" r="5" fill="#22c55e"/><text x="590" y="290" fill="#94a3b8" font-size="10">编程</text>
+  <circle cx="555" cy="300" r="5" fill="#22c55e"/><text x="565" y="305" fill="#94a3b8" font-size="10">算法</text>
+  <circle cx="575" cy="265" r="5" fill="#22c55e"/><text x="585" y="268" fill="#94a3b8" font-size="10">AI</text>
+
+  <!-- Food cluster -->
+  <circle cx="620" cy="120" r="50" fill="#3a2a1a" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4 2" opacity="0.6"/>
+  <text x="620" y="90" text-anchor="middle" fill="#fcd34d" font-family="sans-serif" font-size="11">🍕 食物</text>
+  <circle cx="605" cy="115" r="5" fill="#f59e0b"/><text x="615" y="118" fill="#94a3b8" font-size="10">披萨</text>
+  <circle cx="635" cy="125" r="5" fill="#f59e0b"/><text x="645" y="128" fill="#94a3b8" font-size="10">汉堡</text>
+  <circle cx="615" cy="135" r="5" fill="#f59e0b"/><text x="625" y="138" fill="#94a3b8" font-size="10">面条</text>
+
+  <!-- Cross-domain note -->
+  <text x="400" y="415" text-anchor="middle" fill="#64748b" font-family="sans-serif" font-size="12">
+    实际向量空间有 1536 维，这里简化为 2 维展示。意思相近的词聚集在一起。
+  </text>
+</svg>

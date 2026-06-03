@@ -1,0 +1,370 @@
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Brain, Target, Zap, Sparkles, Lightbulb, Info, Play, BookOpen, Code2, ExternalLink } from "lucide-react";
+
+# 第一周：AI 全景图——从图灵测试到 ChatGPT
+
+<Badge variant="outline">模块一 · 第 1/3 周</Badge> <Badge variant="secondary" className="ml-2">预计 3 小时</Badge>
+
+## 本周目标
+
+建立对 AI 的全局认知，搞懂大语言模型（LLM）最核心的工作原理，跑通你的第一个 API 调用。
+
+<MilestoneCard
+  week={1}
+  title="本周里程碑"
+  description="在你的电脑上安装好环境，成功调用一次 Claude API 或 OpenAI API，看到 AI 返回的结果。"
+/>
+
+---
+
+## 1. AI、机器学习、深度学习、大语言模型——它们什么关系？
+
+这是很多初学者第一个困惑的地方。这些词经常被混用，但它们有明确的包含关系：
+
+<MermaidDiagram
+  chart={`graph TD
+    A[🤖 AI 人工智能] --> B[📊 机器学习 ML]
+    B --> C[🧠 深度学习 DL]
+    C --> D[💬 大语言模型 LLM]
+    D --> E[ChatGPT / Claude / Gemini]
+    style A fill:#e0e7ff,stroke:#6366f1
+    style B fill:#dcfce7,stroke:#22c55e
+    style C fill:#fef3c7,stroke:#eab308
+    style D fill:#fce7f3,stroke:#ec4899
+    style E fill:#cffafe,stroke:#06b6d4`}
+  caption="AI 技术栈的包含关系：每一层都是下一层的技术基础"
+/>
+
+<KeyPoint emoji="🎯">
+  **一句话关系链**：AI 包括 机器学习 包括 深度学习 包括 大语言模型。每个都是前一个的子集。
+</KeyPoint>
+
+<ConceptCard
+  title="AI（人工智能）"
+  icon={Brain}
+  time="1950 年代至今"
+  explanation="最广的概念。任何让计算机表现出「智能」行为的技术都算 AI。早期 AI 是规则系统——if-else 堆起来的专家系统。1950 年图灵提出「图灵测试」：如果一个人无法区分对方是人还是机器，那机器就通过了测试。"
+  color="green"
+/>
+
+<ConceptCard
+  title="机器学习（Machine Learning）"
+  icon={Target}
+  time="1980 年代兴起"
+  explanation="不再人工写规则，而是让计算机从数据中「学」出规则。比如给计算机看 10000 张猫的照片和 10000 张狗的照片，它自己学会区分。核心思想是：数据 + 算法 → 模型。"
+  color="blue"
+/>
+
+<ConceptCard
+  title="深度学习（Deep Learning）"
+  icon={Zap}
+  time="2012 年爆发"
+  explanation="机器学习的子集。使用多层神经网络（所以叫「深度」）来学习。2012 年 AlexNet 在图像识别大赛中以压倒性优势夺冠，开启了这一波 AI 热潮。核心是「层数越多，学到的特征越抽象」。"
+  color="orange"
+/>
+
+<ConceptCard
+  title="大语言模型（LLM）"
+  icon={Sparkles}
+  time="2022 年 ChatGPT 引爆"
+  explanation="深度学习的子集。专门用于理解和生成自然语言的超大神经网络。ChatGPT 的 GPT 就是这个。所谓「大」，指的是参数量巨大——GPT-4 据说有 1.76 万亿参数。你现在用的 ChatGPT、Claude 都是 LLM。"
+  color="purple"
+/>
+
+---
+
+## 2. LLM 到底是怎么工作的？
+
+这是整个模块一最核心的认知。理解了这个，你就超越了 90% 的 AI 用户。
+
+### 一个简单的实验
+
+想象这样一个场景：
+
+<KeyPoint emoji="🧠">
+  给你一句话：「今天天气真___」
+  你会猜什么？大概率是「好」或者「差」或者「热」。
+  LLM 做的事情本质上和你一模一样。
+</KeyPoint>
+
+唯一的区别是：
+- 它读过的文字是你的几百万倍（整个互联网的文本）
+- 它的「猜」不是随便猜，而是基于学到的海量模式，计算每个可能的下一个字的概率
+- 它猜完之后，把猜出来的字加进去，继续猜下一个字，如此往复
+
+这个过程叫做 **自回归生成（Autoregressive Generation）**。每一个新生成的词，都依赖于前面所有的词。
+
+<TipBox title="一个重要的认知转变" icon={Lightbulb}>
+  LLM 不「知道」任何事。它没有知识库，没有信念，没有理解。它只有一个能力：**给定上文，预测下文**。
+
+  它回答「1+1=2」不是因为它懂数学，而是因为它在训练数据里见过几百万遍「1+1=2」这个模式。如果训练数据里都是「1+1=3」，它也会坚定地告诉你「1+1=3」。
+</TipBox>
+
+### 为什么这个认知很重要？
+
+<ImageCard
+  src="/images/concepts/llm-robot.png"
+  alt="Nano Banana 2 生成：可爱的机器人在读字，猜下一个字"
+  caption="看！这个机器人正在读「今天天气真___」，然后抓耳挠腮地猜下一个字。它不是真的懂天气——它只是在回忆它读过的几万亿句话里，哪个字跟在后面最多次。"
+/>
+
+当你理解了「AI 只是在猜字」，很多现象就能解释了：
+
+<ComparisonTable
+  leftTitle="常见现象"
+  rightTitle="原因（因为 AI 只是在猜字）"
+  items={[
+    { left: "AI 会「一本正经胡说八道」", right: "它不是在说真话，是在猜最像真话的字" },
+    { left: "AI 不能做数学", right: "数学需要逻辑推理，不是模式匹配" },
+    { left: "同样的 prompt 可能得到不同答案", right: "每次「猜」的过程有随机性（temperature）" },
+    { left: "长对话中 AI 会「失忆」", right: "它每次只看到最近的一小段对话作为「上文」" },
+    { left: "AI 可以写诗但不能做数学", right: "诗是模式匹配的巅峰，数学需要精确计算" },
+  ]}
+/>
+
+---
+
+## 3. 当前 AI 产品生态
+
+了解了原理之后，看一下当前市场上有什么：
+
+<DataTable
+  headers={["类别", "代表产品", "与你相关"]}
+  rows={[
+    ["闭源顶级模型", "GPT-4o, Claude Opus, Gemini Ultra", "通过 API 付费调用"],
+    ["开源模型", "Llama, DeepSeek, Qwen, Mistral", "可自己部署，数据更安全"],
+    ["AI 编程工具", "Cursor, Claude Code, Copilot", "写代码效率提升 3-5 倍"],
+    ["AI 生图", "Midjourney, DALL-E, Stable Diffusion", "文字描述生成图片"],
+    ["AI 视频", "Sora, Runway, Pika", "文字描述生成视频"],
+    ["AI 搜索", "Perplexity, Google AI Overview", "搜索 + AI 总结"],
+  ]}
+/>
+
+<TipBox title="现阶段你只需要知道一件事" icon={Target}>
+  你不需要自己训练模型（成本百万美元起）。你只需要通过 **API** 调用别人训练好的模型。就像你不需要自己发电，只需要插上插座。
+
+  **API 调用模式 = 你的全部战场（至少在模块一到模块三）**
+</TipBox>
+
+---
+
+## 4. 动手实践
+
+### 第一步：安装环境
+
+<StepGuide
+  steps={[
+    {
+      title: "创建项目文件夹",
+      description: "在你的电脑上创建一个新文件夹，用于存放所有代码文件。",
+      code: "mkdir my-first-ai-app\ncd my-first-ai-app\npython -m venv venv\n\n# Windows 激活虚拟环境\nvenv\\Scripts\\activate\n\n# Mac/Linux\n# source venv/bin/activate"
+    },
+    {
+      title: "安装必要库",
+      description: "使用 pip 安装核心库。streamlit 用于界面，根据需要选择 AI 服务商（OpenAI/Anthropic/DeepSeek/智谱GLM），python-dotenv 用于管理 API Key。",
+      code: "pip install streamlit openai anthropic python-dotenv\n# DeepSeek 使用 OpenAI 兼容接口，openai 包即可\n# 智谱 GLM 额外安装：pip install zhipuai"
+    },
+    {
+      title: "获取 API Key",
+      description: "选择一家 AI 服务商注册并获取 API Key：OpenAI(platform.openai.com)、Anthropic(console.anthropic.com)、DeepSeek(platform.deepseek.com)、智谱GLM(open.bigmodel.cn)。注意：API Key 是私密的，不要上传到 GitHub。"
+    }
+  ]}
+/>
+
+### 第二步：第一个 API 调用
+
+创建一个 `.env` 文件（注意：没有文件名，只有后缀），填入你选择的 API Key：
+
+```bash
+# 选择其中一个服务商即可
+OPENAI_API_KEY=sk-xxx-你的key
+# DEEPSEEK_API_KEY=sk-xxx-你的key
+# CLAUDE_API_KEY=sk-ant-xxx-你的key
+# GLM_API_KEY=xxx-你的key
+```
+
+<InfoCallout icon={Info}>
+  `.env` 文件是存放敏感信息（API Key、密码等）的标准方式。`.gitignore` 里一定要加上 `.env`，防止泄露到 GitHub。
+</InfoCallout>
+
+<ConceptCard
+  title="OpenAI 调用方式"
+  icon={Zap}
+  explanation="最通用的方案。DeepSeek 也兼容此接口（只需改 base_url）。"
+  color="blue"
+/>
+
+```python
+# test_api_openai.py — 适用于 OpenAI / DeepSeek（兼容接口）
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()
+
+# OpenAI
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# DeepSeek（取消下面注释，注释上面那行）
+# client = OpenAI(
+#     api_key=os.getenv("DEEPSEEK_API_KEY"),
+#     base_url="https://api.deepseek.com"
+# )
+
+response = client.chat.completions.create(
+    model="gpt-4o-mini",  # DeepSeek 用 "deepseek-chat"
+    messages=[{"role": "user", "content": "用一句话解释什么是 AI"}]
+)
+
+print(response.choices[0].message.content)
+```
+
+<ConceptCard
+  title="Anthropic (Claude) 调用方式"
+  icon={Brain}
+  explanation="Claude API，原生支持 Tool Use，适合 Agent 开发。"
+  color="purple"
+/>
+
+```python
+# test_api_claude.py
+import os
+from dotenv import load_dotenv
+from anthropic import Anthropic
+
+load_dotenv()
+
+client = Anthropic(api_key=os.getenv("CLAUDE_API_KEY"))
+
+message = client.messages.create(
+    model="claude-haiku-4-5-20251001",
+    max_tokens=200,
+    messages=[{"role": "user", "content": "用一句话解释什么是 AI"}]
+)
+
+print(message.content[0].text)
+```
+
+<ConceptCard
+  title="智谱 GLM 调用方式"
+  icon={Sparkles}
+  explanation="国产大模型，中文能力强，价格实惠。"
+  color="green"
+/>
+
+```python
+# test_api_glm.py — 智谱 GLM（OpenAI 兼容模式）
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()
+
+client = OpenAI(
+    api_key=os.getenv("GLM_API_KEY"),
+    base_url="https://open.bigmodel.cn/api/paas/v4/"
+)
+
+response = client.chat.completions.create(
+    model="glm-4-flash",  # 免费/便宜的模型
+    messages=[{"role": "user", "content": "用一句话解释什么是 AI"}]
+)
+
+print(response.choices[0].message.content)
+```
+
+运行你选择的版本：
+
+```bash
+python test_api_openai.py
+```
+
+如果看到 AI 的回复——恭喜，你已经完成了 AI 开发的第一步！
+
+<DataTable
+  headers={["服务商", "安装包", "推荐模型", "国内访问"]}
+  rows={[
+    ["OpenAI", "pip install openai", "gpt-4o-mini", "需代理"],
+    ["Anthropic Claude", "pip install anthropic", "claude-haiku-4-5-20251001", "需代理"],
+    ["DeepSeek", "pip install openai", "deepseek-chat", "直接访问 ✓"],
+    ["智谱 GLM", "pip install openai", "glm-4-flash", "直接访问 ✓"],
+  ]}
+  caption="国内用户推荐 DeepSeek 或智谱 GLM——无需代理，注册即用，价格便宜。"
+/>
+
+<WarningBox title="常见踩坑">
+  - **401 错误**：API Key 填错了或已过期。去后台检查。
+  - **429 错误**：调用太频繁或余额不足，等几秒再试。
+  - **model not found**：模型名称拼写错误。复制粘贴别手打。
+  - **.env 文件没生效**：确保 `.env` 文件和 `test_api.py` 在同一目录。
+  - **DeepSeek/GLM 调用报 404**：检查 `base_url` 是否正确（末尾带 `/`）。
+  - **API 调用超时**：OpenAI/Claude 国内访问可能需要代理，推荐用 DeepSeek 或智谱 GLM。
+</WarningBox>
+
+<SuccessBox title="如果你成功了">
+  恭喜！你现在已经是一个「AI 应用开发者」了。你刚刚做的事情，就是所有 AI 产品最底层的操作——通过 API 发送一段文字，接收 AI 生成的回复。模块一后面的内容、模块二的 RAG、模块三的 Agent，都是在这个基础上叠加更多逻辑。
+</SuccessBox>
+
+---
+
+## 5. 推荐视频
+
+<VideoCard
+  title="Andrej Karpathy - Intro to Large Language Models（强烈推荐）"
+  youtubeId="zjkBMFhNj_g"
+  description="1 小时讲透 LLM 的核心概念。AI 大神 Karpathy（前 OpenAI 联创、特斯拉 AI 总监）用最简单的话解释最复杂的事。建议全家一起看。"
+  duration="59:13"
+/>
+
+---
+
+## 6. 三视角复盘
+
+<ReviewPanel type="principle">
+  **我这周搞懂的核心概念**：LLM 的本质是「猜下一个字」。它不「知道」任何事，它只是在海量训练数据中学到了「什么字通常在什么字后面出现」的模式。
+
+  **我能用一句话说清吗？** AI 就像一个读过整个互联网、记忆力超强的鹦鹉——它极其擅长猜你下一句想说什么，但它不知道自己在说什么。
+</ReviewPanel>
+
+<ReviewPanel type="money">
+  **这个技术能解决谁的什么问题？** 任何需要「生成文字」的场景：写邮件、写报告、写代码、写文案、翻译、总结、回答问题。市场上已经有靠「套壳 ChatGPT API + 垂直场景 prompt」月入过万的产品。
+
+  **有人愿意为此付费吗？** 纯通用聊天产品很难收费（ChatGPT 免费）。但如果你把 API 包装成「特定场景的工具」——比如专门写小红书文案的——就有人愿意付费。用户买的不是 AI，是「省时间」。
+</ReviewPanel>
+
+<ReviewPanel type="education">
+  **怎么给孩子讲？**
+  「宝宝学说话的时候，是不是听爸爸妈妈说了很多很多话，然后慢慢就会说了？AI 也是一样的——它'听'（读）了整个互联网上所有的文字，然后学会了怎么说话。但是呢，它不知道自己说的是什么，它只是在模仿。就像你小时候可能会跟着电视说广告词，但不知道广告词是什么意思。」
+</ReviewPanel>
+
+---
+
+## 7. 延伸资源
+
+<ResourceLink
+  title="The Illustrated Transformer"
+  url="https://jalammar.github.io/illustrated-transformer/"
+  type="article"
+  description="Transformer 架构最好的图解文章。目前可能有点难，标记一下，模块四再看。"
+/>
+
+<ResourceLink
+  title="tiktokenizer - Token 可视化工具"
+  url="https://tiktokenizer.vercel.app"
+  type="tool"
+  description="输入一段中英文混合文字，看 Token 是怎么被切分的。下周深入讲 Token 时会频繁用到。"
+/>
+
+<ResourceLink
+  title="Andrej Karpathy - Intro to Large Language Models"
+  url="https://www.youtube.com/watch?v=zjkBMFhNj_g"
+  type="video"
+  description="1 小时通俗讲解 LLM。如果这周只能看一个视频，看这个。"
+/>
+
+---
+
+## 下周预告
+
+下周我们将深入学习 **Token 和上下文窗口机制**。你会理解为什么 AI 在长对话中会「失忆」，以及计费是怎么算的。同时开始搭建 Streamlit 界面，为第三周做出完整应用做准备。

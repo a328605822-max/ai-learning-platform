@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" fill="none">
+  <rect width="800" height="420" rx="14" fill="#0f172a"/>
+  <text x="400" y="35" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="17" font-weight="bold">语义搜索 vs 关键词搜索</text>
+
+  <!-- Keyword Search -->
+  <rect x="30" y="55" width="360" height="340" rx="10" fill="#1e293b" stroke="#334155"/>
+  <text x="210" y="85" text-anchor="middle" fill="#f87171" font-family="sans-serif" font-size="15" font-weight="bold">关键词搜索</text>
+
+  <text x="60" y="120" fill="#94a3b8" font-family="sans-serif" font-size="12">用户查询：</text>
+  <rect x="60" y="130" width="300" height="32" rx="6" fill="#450a0a" stroke="#dc2626"/>
+  <text x="210" y="152" text-anchor="middle" fill="#fca5a5" font-family="monospace" font-size="12">苹果 手机 最新款 价格</text>
+
+  <text x="60" y="195" fill="#94a3b8" font-family="sans-serif" font-size="12">匹配结果：</text>
+  <rect x="60" y="205" width="300" height="28" rx="5" fill="#1a3a1a" stroke="#22c55e"/>
+  <text x="80" y="225" fill="#86efac" font-family="monospace" font-size="11">✓ 「苹果手机 2024 最新款」</text>
+  <rect x="60" y="240" width="300" height="28" rx="5" fill="#1a3a1a" stroke="#22c55e"/>
+  <text x="80" y="260" fill="#86efac" font-family="monospace" font-size="11">✓ 「最新款苹果手机价格」</text>
+  <rect x="60" y="275" width="300" height="28" rx="5" fill="#3a1a1a" stroke="#ef4444"/>
+  <text x="80" y="295" fill="#fca5a5" font-family="monospace" font-size="11">✗ 「iPhone 16 Pro 评测」</text>
+  <rect x="60" y="310" width="300" height="28" rx="5" fill="#3a1a1a" stroke="#ef4444"/>
+  <text x="80" y="330" fill="#fca5a5" font-family="monospace" font-size="11">✗ 「最好的智能手机推荐」</text>
+
+  <text x="210" y="375" text-anchor="middle" fill="#f87171" font-family="sans-serif" font-size="11">只有精确匹配关键词的文档才被找到</text>
+
+  <!-- Arrow -->
+  <text x="400" y="230" text-anchor="middle" fill="#6366f1" font-family="sans-serif" font-size="28">→</text>
+
+  <!-- Semantic Search -->
+  <rect x="410" y="55" width="360" height="340" rx="10" fill="#1e293b" stroke="#334155"/>
+  <text x="590" y="85" text-anchor="middle" fill="#34d399" font-family="sans-serif" font-size="15" font-weight="bold">语义搜索（Embedding）</text>
+
+  <text x="440" y="120" fill="#94a3b8" font-family="sans-serif" font-size="12">用户查询向量化：</text>
+  <rect x="440" y="130" width="300" height="32" rx="6" fill="#1e3a5f" stroke="#3b82f6"/>
+  <text x="590" y="152" text-anchor="middle" fill="#93c5fd" font-family="monospace" font-size="12">「苹果手机」→ [0.23, -0.45, 0.78, ...]</text>
+
+  <text x="440" y="195" fill="#94a3b8" font-family="sans-serif" font-size="12">向量相似度匹配（余弦距离）：</text>
+  <rect x="440" y="205" width="300" height="28" rx="5" fill="#1a3a1a" stroke="#22c55e"/>
+  <text x="460" y="225" fill="#86efac" font-family="monospace" font-size="11">✓ 余弦相似度 0.92 —「iPhone 16 Pro 评测」</text>
+  <rect x="440" y="240" width="300" height="28" rx="5" fill="#1a3a1a" stroke="#22c55e"/>
+  <text x="460" y="260" fill="#86efac" font-family="monospace" font-size="11">✓ 余弦相似度 0.88 —「最好的智能手机推荐」</text>
+  <rect x="440" y="275" width="300" height="28" rx="5" fill="#1a3a1a" stroke="#22c55e"/>
+  <text x="460" y="295" fill="#86efac" font-family="monospace" font-size="11">✓ 余弦相似度 0.85 —「苹果手机 2024 最新款」</text>
+  <rect x="440" y="310" width="300" height="28" rx="5" fill="#3a3a1a" stroke="#eab308"/>
+  <text x="460" y="330" fill="#fde68a" font-family="monospace" font-size="11">△ 余弦相似度 0.42 —「水果苹果的营养价值」</text>
+
+  <text x="590" y="375" text-anchor="middle" fill="#34d399" font-family="sans-serif" font-size="11">能理解「意思」而非只匹配「字面」</text>
+
+</svg>

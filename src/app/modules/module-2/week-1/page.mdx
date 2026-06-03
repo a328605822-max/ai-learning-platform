@@ -1,0 +1,294 @@
+import { Badge } from "@/components/ui/badge";
+import { Brain, Target, Zap, Sparkles, Lightbulb, Info, Play, BookOpen, Code2, ExternalLink, Search, Database } from "lucide-react";
+
+# 第一周：Embedding 入门——让计算机理解「意思」
+
+<Badge variant="outline">模块二 · 第 1/3 周</Badge> <Badge variant="secondary" className="ml-2">预计 3.5 小时</Badge>
+
+## 本周目标
+
+理解 Embedding 是什么、怎么生成、怎么用。动手把文字转成向量，可视化感受「意思相近的词语坐标也相近」。
+
+**本周里程碑**：能生成 Embedding，计算两段文字的相似度，直观感受语义空间的魔力。
+
+---
+
+## 1. 核心概念讲解
+
+### 1.1 计算机不认识「字」，只认识「数」
+
+这是整个模块二最重要的认知。你看到的「猫」和「狗」，计算机都不认识。它只认识数字。
+
+问题来了：怎么把「意思」变成数字？而且还要让意思相近的词，数字也相近？
+
+答案就是 **Embedding（嵌入向量）**。
+
+<KeyPoint emoji="🧠">
+  **Embedding = 把一段文字变成一个高维坐标。** 比如把「猫」变成 `[0.23, -0.45, 0.78, 0.12, ...]` 这样一个 1536 维的向量（就是 1536 个数字组成的列表）。
+</KeyPoint>
+
+### 1.2 为什么这很神奇？
+
+把文字变成数字不难——比如给每个字编个号就行。但 Embedding 的厉害之处在于：**它把「语义」编码进了数字里。**
+
+<TipBox title="一个直观的理解" icon={Lightbulb}>
+  想象一张很大的地图。每个词在地图上有一个位置：
+  - 「猫」「狗」「兔子」住在一起（动物小区）
+  - 「苹果」「香蕉」「橘子」住在一起（水果小区）
+  - 「汽车」「火车」「飞机」住在一起（交通工具小区）
+
+  Embedding 就是把每个词放到这张「语义地图」的正确位置上。而且这个地图不是平面的——它有 1536 个维度！
+</TipBox>
+
+### 1.3 Embedding 的三个核心特性
+
+<ConceptCard
+  title="语义相似性"
+  icon={Brain}
+  explanation="意思相近的词，向量距离相近。你可以用「余弦相似度」来量化：「猫」和「小狗」的相似度可能是 0.85（很高），「猫」和「汽车」的相似度可能是 0.12（很低）。"
+  color="blue"
+/>
+
+<ConceptCard
+  title="语义运算"
+  icon={Zap}
+  explanation="你甚至可以做向量运算！最经典的例子：`国王 - 男人 + 女人 ≈ 女王`。这证明 Embedding 真的捕捉到了「语义关系」而不只是「词面相似」。"
+  color="orange"
+/>
+
+<ConceptCard
+  title="跨语言对齐"
+  icon={Sparkles}
+  explanation="中英文的「猫」和「cat」在 Embedding 空间中位置几乎相同。这意味着 AI 理解的是「概念」，而不是「某种语言的文字」。"
+  color="purple"
+/>
+
+<ImageCard
+  src="/images/concepts/semantic-space-3d.png"
+  alt="FLUX 生成：3D 语义向量空间的星座网络"
+  caption="看！每个发光的点都是一个概念。颜色相近的点自动聚在一起——橙色的是动物（猫、狗、兔子），蓝色的是科技（AI、算法、数据），绿色的是食物。意思越近，离得越近。这就是 AI 的「语义星座图」。"
+/>
+
+### 1.4 余弦相似度：衡量「意思有多近」
+
+既然 Embedding 是向量（坐标），那怎么衡量两个向量的「距离」呢？最常用的方法是**余弦相似度（Cosine Similarity）**：
+
+```
+余弦相似度 = (A · B) / (|A| × |B|)
+
+结果范围：-1 到 1
+  1  = 方向完全一样（意思完全相同）
+  0  = 互相垂直（意思无关）
+  -1 = 完全相反（意思相反）
+```
+
+不需要你手算——有现成的库帮你算：
+
+```python
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+
+cat = np.array([[0.23, -0.45, 0.78, ...]])    # 猫的 Embedding
+dog = np.array([[0.25, -0.42, 0.75, ...]])    # 狗的 Embedding
+car = np.array([[0.80, 0.12, -0.34, ...]])    # 汽车的 Embedding
+
+print(f"猫 vs 狗：{cosine_similarity(cat, dog)[0][0]:.3f}")   # 高（比如 0.89）
+print(f"猫 vs 汽车：{cosine_similarity(cat, car)[0][0]:.3f}") # 低（比如 0.15）
+```
+
+<ImageCard
+  src="/images/concepts/embedding-space.png"
+  alt="Nano Banana 2 生成：3D Embedding 空间中的词语聚类"
+  caption="看！在 AI 的「大脑」里，词不是按字母顺序排的，而是按「意思」排的。动物们凑成一堆，食物们挤在另一边——就像一个超大的、有 1536 个维度的语义地图。刚才的余弦相似度，就是在量这张地图上两个点之间的「方向有多近」。"
+/>
+
+---
+
+## 2. 动手实践
+
+### 第一步：安装依赖
+
+```bash
+pip install anthropic python-dotenv scikit-learn numpy
+```
+
+### 第二步：生成你的第一个 Embedding
+
+创建 `embedding_demo.py`：
+
+```python
+import os
+from dotenv import load_dotenv
+from anthropic import Anthropic
+import numpy as np
+
+load_dotenv()
+
+client = Anthropic(api_key=os.getenv("CLAUDE_API_KEY"))
+
+def get_embedding(text: str) -> list[float]:
+    """把一段文字变成 Embedding 向量"""
+    response = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=200,
+        messages=[{"role": "user", "content": text}]
+    )
+    return response.content[0].text
+
+
+words = ["猫", "狗", "小狗", "汽车", "卡车", "苹果", "香蕉"]
+
+print("🔍 生成 Embedding...")
+embeddings = {}
+for word in words:
+    result = get_embedding(f"用一个词描述：{word}")
+    embeddings[word] = result
+    print(f"  {word} → 已生成")
+
+print("\n✅ 完成！虽然没有直接返回 Embedding API，但你理解了核心流程。")
+```
+
+<InfoCallout icon={Info}>
+  注意：上面的示例是教学用的简化版。在实际项目中，Claude 通过专门的 Embedding API 或者你使用 OpenAI 的 `text-embedding-3-small` 模型来获取 Embedding。本教程侧重让你理解概念——知道 Embedding 是什么、能做什么。
+</InfoCallout>
+
+### 第三步：用 Embedding 做语义搜索
+
+创建 `semantic_search.py`——这是一个简化的演示，让你感受语义搜索和关键词搜索的区别：
+
+```python
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+
+# 假设这些是文档库
+documents = [
+    "猫是一种很可爱的宠物",
+    "如何保养你的汽车发动机",
+    "狗是人类最好的朋友",
+    "2024 年最值得买的 SUV 车型",
+    "小猫咪的喂养指南",
+    "汽车保险怎么买最划算",
+    "我家狗狗最近不爱吃东西怎么办",
+]
+
+# 假设我们已经把每个文档都转成了 Embedding（这里用模拟数据）
+# 实际项目中你会调用 Embedding API 来获取真正的向量
+
+def simulate_embedding(text: str) -> np.ndarray:
+    """模拟 Embedding（实际项目中替换为 API 调用）"""
+    # 这里只是一个教学用的简化版本
+    animal_words = {"猫", "狗", "宠物", "猫咪", "狗狗", "喂养"}
+    car_words = {"汽车", "SUV", "车型", "发动机", "保养", "保险"}
+
+    animal_score = sum(1 for w in animal_words if w in text)
+    car_score = sum(1 for w in car_words if w in text)
+
+    return np.array([[animal_score, car_score, len(text) / 100]])
+
+# 用户查询
+query = "我想养一只猫"
+
+# 关键词搜索（传统方式）
+print("📋 关键词匹配结果：")
+keyword_results = []
+for doc in documents:
+    score = sum(1 for w in query if w in doc)
+    if score > 0:
+        keyword_results.append((doc, score))
+        print(f"  ✓ ({score}个词匹配) {doc}")
+
+if not keyword_results:
+    print("  （没有精确匹配关键词的结果）")
+
+print()
+
+# 语义搜索（Embedding 方式）
+print("🧠 语义搜索（Embedding）结果：")
+query_emb = simulate_embedding(query)
+doc_embs = [simulate_embedding(doc) for doc in documents]
+similarities = [cosine_similarity(query_emb, de)[0][0] for de in doc_embs]
+
+# 按相似度排序
+ranked = sorted(zip(documents, similarities), key=lambda x: x[1], reverse=True)
+for i, (doc, sim) in enumerate(ranked[:3]):
+    print(f"  #{i+1} (相似度 {sim:.3f}) {doc}")
+```
+
+运行后你会看到：语义搜索能找出「小猫咪的喂养指南」这类不包含「养」字的文档——因为它在「意思上」相关，而不只是「字面上」匹配。
+
+---
+
+## 3. 交互实验室
+
+<VideoCard
+  title="Embedding 星系——交互可视化"
+  youtubeId=""
+  description="打开 Embedding Lab，输入一些词语，看它们在 2D 语义空间中的位置。意思相近的词语会自动聚在一起！"
+/>
+
+<TipBox title="去 Lab 页面试试">
+  访问 [Embedding 星系 Lab](/labs/embedding-viz)，自己输入词语感受语义空间的魔力。输入中英文混合的词语，看看跨语言的语义对齐效果。
+</TipBox>
+
+---
+
+## 4. 三视角复盘
+
+<ReviewPanel type="principle">
+
+### 原理视角
+
+**我这周搞懂的核心概念**：Embedding 就是把「意思」变成「数字坐标」。有了坐标，就可以用数学（余弦相似度）来衡量两个东西在「意思上」有多接近。
+
+**我能用一句话说清吗？** Embedding 是 AI 的「语义 GPS」——给每个概念一个坐标，意思近的坐标近。
+
+</ReviewPanel>
+
+<ReviewPanel type="money">
+
+### 变现视角
+
+Embedding 是 RAG 的基础，而 RAG 是 B 端 AI 的底层模式。你不需要训练模型——你只需要：
+1. 收集某个垂直领域的文档
+2. 用 Embedding 建好向量索引
+3. 用 RAG 让 AI 学会这个领域
+
+这就是「AI 客服」「AI 法务」「AI 医疗助手」背后的技术。差异化的不是技术，是你的领域文档。
+
+</ReviewPanel>
+
+<ReviewPanel type="education">
+
+### 教育视角
+
+**怎么给孩子讲 Embedding？**
+
+「你脑子里有没有一张'东西的地图'？比如你知道苹果和橘子是'一伙的'，汽车和火车是'一伙的'。那你有没有想过——如果让你画一张图，把每个东西放在它该在的位置上，你会怎么放？」
+
+「AI 的 Embedding 就是做了这件事——它给世界上所有东西都画了一张'意思地图'。在这个地图上，离得近的就是意思近的。而且这个地图有 1536 层——比我们平时画的地图复杂多了！」
+
+</ReviewPanel>
+
+---
+
+## 5. 延伸资源
+
+<ResourceLink
+  title="OpenAI Embeddings 文档"
+  url="https://platform.openai.com/docs/guides/embeddings"
+  type="article"
+  description="了解 text-embedding-3-small 和 text-embedding-3-large 模型的用法和价格。Embedding API 非常便宜——$0.02/1M tokens。"
+/>
+
+<ResourceLink
+  title="Cosine Similarity Explained"
+  url="https://www.youtube.com/results?search_query=cosine+similarity+explained"
+  type="video"
+  description="如果你对「余弦相似度」这个概念不熟，找个 3-5 分钟的短视频看一下就够了。核心只需要初中的向量点乘知识。"
+/>
+
+---
+
+## 下周预告
+
+下周我们将搭建 Chroma 向量数据库——把你的文档全部向量化存起来，实现毫秒级的语义搜索。这是 RAG 的「记忆仓库」部分。

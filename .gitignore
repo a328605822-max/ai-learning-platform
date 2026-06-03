@@ -36,6 +36,14 @@ yarn-error.log*
 # vercel
 .vercel
 
+# debug/json dumps
+attn.json
+emb.json
+nn.json
+predict1.json
+nb_response_2.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env

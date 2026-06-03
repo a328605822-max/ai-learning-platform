@@ -1,0 +1,107 @@
+import { Badge } from "@/components/ui/badge";
+import { Brain, Target, Zap, Sparkles, Lightbulb, AlertTriangle, CheckCircle2, Info, Play, BookOpen, Code2, ExternalLink, Search, TrendingUp } from "lucide-react";
+
+# 第一周：选方向 + 需求验证
+
+<Badge variant="outline">模块五 · 第 1/4 周</Badge> <Badge variant="secondary" className="ml-2">预计 3.5 小时</Badge>
+
+## 本周目标
+
+选择产品方向，用 AI 辅助做竞品分析和用户调研。用最少的时间确定「这个方向值得做」。
+
+**本周里程碑**：确定产品方向，有至少 3 个竞品分析 + 5 个潜在用户反馈。
+
+---
+
+## 1. 选方向：四个赛道
+
+<ImageCard
+  src="/images/concepts/product-direction-decision.png"
+  alt="FLUX 生成：产品方向选择"
+  caption="站在三岔路口：左边是知识库(RAG垂直助手)，中间是机器人(Agent自动化)，右边是大脑微调(Fine-tuning)。每条路都通向不同的产品类型——关键是选择和你优势最匹配的那条。"
+/>
+
+<ImageCard
+  src="/images/diagrams/product-decision-tree.svg"
+  alt="AI 产品方向选择决策树"
+  caption="选哪个方向？关键看你有什么：独家的领域文档 → 垂直助手(RAG)；用户需要多步操作 → Agent；有大量专有数据 → 微调。不确定就从垂直助手做起。"
+/>
+
+### 四个方向对比
+
+<DataTable
+  headers={["方向", "技术栈", "难度", "付费意愿", "代表产品"]}
+  rows={[
+    ["垂直领域助手", "RAG + System Prompt", "低", "中~高", "法律AI/医疗AI/教辅AI"],
+    ["知识库问答", "RAG + 文档管理", "低", "中", "公司内部知识库/学习助手"],
+    ["AI Agent 自动化", "Function Calling + 循环", "中", "高", "自动报表/邮件助理"],
+    ["微调垂直模型", "Fine-tuning + 数据", "高", "高", "专属写作风格/代码模型"],
+  ]}
+/>
+
+<TipBox title="建议从垂直助手开始" icon={Lightbulb}>
+  你做模块二已经会 RAG 了——这是垂直助手的全部技术基础。找一个你熟悉的领域（你的工作、你的爱好），收集这个领域的文档，用 RAG 做一个专属助手。这是最快能出 MVP 的方向。
+</TipBox>
+
+---
+
+## 2. 需求验证：在写代码之前
+
+### 用 AI 做竞品分析
+
+```markdown
+# AI 辅助竞品分析 Prompt 模板
+
+我想做一个 [产品简述，一句话]，面向 [目标用户]。
+
+请帮我：
+1. 搜索 3-5 个直接竞品或间接竞品，列出名称和核心功能
+2. 分析每个竞品的定价策略
+3. 找出它们共同缺失的功能（可能是你的机会点）
+4. 评估这个市场的规模和付费意愿
+
+输出格式：表格+简短分析
+```
+
+### 用 AI 做用户调研
+
+在写一行代码之前，先找 5 个潜在用户聊聊：
+
+```
+不需要做问卷调查。直接在微信/论坛/社群里找目标用户，私聊问：
+
+1. 「你平时做 [某件事] 最大痛点是什么？」
+2. 「你现在怎么解决这个问题？」
+3. 「如果有人帮你自动完成，你愿意付多少钱？」
+4. 「你觉得什么样的方案是「好的」？」
+
+5 个私聊 > 50 份问卷。重点是听「真实需求」不是「礼貌回答」。
+```
+
+<WarningBox title="如果用户说'挺好的'">
+  「挺好的」= 不会付钱。只有当用户说「我也遇到这个问题！你做好了发我！」的时候，才是真正的需求信号。
+</WarningBox>
+
+---
+
+## 3. 三视角复盘
+
+<ReviewPanel type="principle">
+产品方向选择 = 技术可行性 × 市场需求 × 你的优势。技术可行性你已经会判断（前四个模块学到的），市场需求靠竞品分析+用户调研，你的优势是最终的差异化来源。
+</ReviewPanel>
+
+<ReviewPanel type="money">
+不要做「通用的 AI 聊天工具」（ChatGPT 免费且更好）。做「特定场景的 AI 工具」——写小红书的、写周报的、整理发票的。场景越具体，用户越愿意付费。
+</ReviewPanel>
+
+<ReviewPanel type="education">
+教孩子「在动手做任何事之前，先想清楚：谁需要这个？他们现在怎么解决的？我做的东西怎么比现有方案更好？」这不是 AI 知识——这是产品思维。AI 时代更需要这个。
+</ReviewPanel>
+
+## 延伸资源
+<ResourceLink title="Indie Hackers" url="https://www.indiehackers.com/" type="tool" description="独立开发者社区，看别人做了什么 AI 产品、赚了多少钱。" />
+
+---
+
+## 下周预告
+下周正式进入开发——用 AI 编程工具加速 MVP 开发。你设计架构，AI 填代码细节。目标是 6 小时内做出核心功能可用的版本。

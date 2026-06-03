@@ -1,0 +1,164 @@
+import { Badge } from "@/components/ui/badge";
+import { Brain, Target, Zap, Sparkles, Lightbulb, AlertTriangle, Info, Play, BookOpen, Code2, ExternalLink } from "lucide-react";
+
+# 第三周：Transformer 解剖——Attention 到底在干什么
+
+<Badge variant="outline">模块四 · 第 3/4 周</Badge> <Badge variant="secondary" className="ml-2">预计 4 小时</Badge>
+
+## 本周目标
+
+逐行理解 Transformer 的每个组件。重点攻克 Self-Attention 机制——这可能是整个 AI 学习中最重要的一个概念。
+
+**本周里程碑**：用 NumPy 实现单头 Self-Attention，能可视化 Attention 权重矩阵。
+
+---
+
+## 1. 核心概念讲解
+
+### 1.1 为什么需要 Attention？
+
+RNN 时代：逐字处理，前面说的容易忘。
+
+Transformer 时代：**一次性看整句话，每个词同时关注所有其他词。**
+
+<ImageCard
+  src="/images/concepts/transformer-attention-heatmap.png"
+  alt="FLUX 生成：Transformer Attention 热力图"
+  caption="句子中每个词和其他所有词的连接线——线越亮越粗代表注意力越高。「它」到「老鼠」的线最亮最粗——模型自动学会了代词指代消解。"
+/>
+
+```
+输入：「猫追老鼠，它跑了」
+
+RNN 视角：猫→追→老鼠→，→它→跑→了（处理到「它」时对「猫」的记忆已经很淡了）
+Attn 视角：每个词同时看到所有词，并计算「关注度」。
+          处理「它」时 → 高度关注「老鼠」(0.7) 和「猫」(0.2)
+```
+
+<ImageCard
+  src="/images/diagrams/attention-weights.svg"
+  alt="Self-Attention 权重矩阵可视化"
+  caption="「它」第5个词（第5行）对「老鼠」第3个词（第3列）的注意力最高——模型自动学会了「它」指代的是「老鼠」而不是「猫」。这就是 Attention 做「指代消解」的方式。"
+/>
+
+### 1.2 Self-Attention 的数学直觉
+
+Self-Attention 的核心是三个矩阵：Q（Query）、K（Key）、V（Value）。
+
+<ConceptCard title="Q（Query）：查询" icon={Zap} explanation="「我在找什么？」每个词生成一个查询向量，代表它想找什么信息。" color="blue" />
+<ConceptCard title="K（Key）：键" icon={Target} explanation="「我有什么？」每个词生成一个键向量，代表它携带什么信息。" color="orange" />
+<ConceptCard title="V（Value）：值" icon={Zap} explanation="「我的内容是什么？」每个词生成一个值向量，代表它的实际内容。" color="purple" />
+
+**Attention 计算过程（4 步）：**
+
+<ImageCard
+  src="/images/concepts/self-attention-mechanism.png"
+  alt="FLUX 生成：Self-Attention QKV机制"
+  caption="Q(Query)在搜索、K(Key)在匹配、V(Value)在提供内容。三条发光的数据流交汇、加权、融合——这就是 Attention 的全部计算过程。"
+/>
+
+```
+1. 词→Q, K, V （三个可学习的矩阵乘法）
+2. 注意力分数 = Q × Kᵀ   （所有词两两比较）
+3. 注意力权重 = Softmax(分数/√d)  （归一化成概率分布）
+4. 输出 = 权重 × V       （加权聚合信息）
+
+公式：Attention(Q,K,V) = Softmax(QKᵀ/√dₖ) × V
+```
+
+<ImageCard
+  src="/images/diagrams/transformer-architecture.svg"
+  alt="Transformer 架构全景图"
+  caption="Transformer Block 的完整结构：Self-Attention → Add & LayerNorm → FFN → Add & LayerNorm。GPT-3 把这个 Block 重复了 96 次！每次重复都能捕捉更高级的语言模式。"
+/>
+
+### 1.3 Multi-Head Attention：并行多个「视角」
+
+单头 Attention 只能学一种「关注模式」。Multi-Head 并行跑多个 Attention，每个关注不同的关系：
+
+- Head 1：关注「代词→指代对象」的关系
+- Head 2：关注「动词→主语」的关系
+- Head 3：关注「形容词→名词」的关系
+
+---
+
+## 2. 动手实践
+
+### 用 NumPy 实现 Self-Attention
+
+```python
+import numpy as np
+
+def softmax(x):
+    e_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
+    return e_x / e_x.sum(axis=-1, keepdims=True)
+
+class SelfAttention:
+    def __init__(self, d_model=512, d_k=64):
+        # 三个可学习的权重矩阵
+        self.W_Q = np.random.randn(d_model, d_k) * 0.01
+        self.W_K = np.random.randn(d_model, d_k) * 0.01
+        self.W_V = np.random.randn(d_model, d_k) * 0.01
+
+    def forward(self, X):
+        # X shape: (seq_len, d_model)
+        # 例如: (7, 512) = 7个词，每个512维
+
+        Q = X @ self.W_Q  # (7, 64)  查询
+        K = X @ self.W_K  # (7, 64)  键
+        V = X @ self.W_V  # (7, 64)  值
+
+        # 注意力分数矩阵 (7x7)
+        scores = Q @ K.T / np.sqrt(64)
+
+        # 注意力权重 (7x7)
+        attn_weights = softmax(scores)
+
+        # 加权聚合 (7, 64)
+        output = attn_weights @ V
+
+        return output, attn_weights
+
+# 测试：7个词的句子
+seq_len, d_model = 7, 512
+X = np.random.randn(seq_len, d_model)
+
+attn = SelfAttention(d_model=512, d_k=64)
+output, weights = attn.forward(X)
+
+print("输入: (7词, 512维)")
+print(f"输出: {output.shape} (7词, 64维)")
+print(f"注意力权重矩阵:\n{weights.round(3)}")
+print(f"\n每行权重之和: {weights.sum(axis=1)} (都是1 —— Softmax归一化)")
+```
+
+<ImageCard
+  src="/images/diagrams/attention-weights.svg"
+  alt="Attention 权重热力图"
+  caption="看那些最大的数字——它们代表「这个词最关注哪个词」。(第5行=「它」) 最关注 (第3列=「老鼠」)，权重 0.7。模型学会了代词指代！"
+/>
+
+<TipBox title="Transformer 的灵魂：位置编码">
+  Attention 本身不关心词的顺序（「猫追老鼠」和「老鼠追猫」对它来说一样）。所以需要额外注入位置信息——Position Encoding。用 sin/cos 函数给每个位置生成唯一的编码，加到词向量上。
+</TipBox>
+
+---
+
+## 3. 三视角复盘
+
+<ReviewPanel type="principle">
+Attention = 每个词动态计算「该关注其他哪个词」。这解决了 RNN 的「长距离遗忘」问题。Multi-Head 让模型能从多个角度同时关注。Transformer 的全部创新就在这。
+</ReviewPanel>
+
+<ReviewPanel type="money">
+理解了 Attention，你就能理解为什么上下文窗口这么贵——因为 Attention 的计算复杂度是 O(n²)（n是token数）。200K token 的上下文需要 40 亿次两两比较。这就是为什么长上下文模型又贵又慢。
+</ReviewPanel>
+
+<ReviewPanel type="education">
+**怎么给孩子讲 Attention？**「你在一个嘈杂的教室里，想听清老师说什么。你的耳朵会自动'关注'老师的声音，忽略旁边同学的聊天声。AI 的 Attention 就是在做同样的事——在一句话中，它知道该'听'哪些词，该忽略哪些词。」
+</ReviewPanel>
+
+---
+
+## 下周预告
+下周是模块四的高光时刻——把前三周的知识整合起来，从零训练一个字符级 GPT。用莎士比亚全集做训练数据，看模型从乱码一步步学会写「To be, or not to be」。

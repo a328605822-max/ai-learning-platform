@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" fill="none">
+  <rect width="800" height="420" rx="14" fill="#0f172a"/>
+  <text x="400" y="35" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="17" font-weight="bold">Transformer 架构</text>
+
+  <!-- Input -->
+  <rect x="30" y="55" width="160" height="35" rx="6" fill="#1e3a5f" stroke="#3b82f6"/>
+  <text x="110" y="78" text-anchor="middle" fill="#93c5fd" font-family="sans-serif" font-size="12" font-weight="bold">输入："我 爱 AI"</text>
+
+  <text x="210" y="78" fill="#6366f1" font-family="sans-serif" font-size="18">→</text>
+
+  <!-- Embedding -->
+  <rect x="240" y="50" width="120" height="45" rx="6" fill="#1a2a3a" stroke="#06b6d4"/>
+  <text x="300" y="68" text-anchor="middle" fill="#67e8f9" font-family="sans-serif" font-size="10">Token Embedding</text>
+  <text x="300" y="84" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="9">词→768维向量</text>
+
+  <text x="380" y="78" fill="#6366f1" font-family="sans-serif" font-size="18">→</text>
+
+  <!-- Position Encoding -->
+  <rect x="410" y="50" width="120" height="45" rx="6" fill="#3a2a0a" stroke="#eab308"/>
+  <text x="470" y="68" text-anchor="middle" fill="#fde68a" font-family="sans-serif" font-size="10">Position Encoding</text>
+  <text x="470" y="84" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="9">位置信息</text>
+
+  <text x="550" y="78" fill="#6366f1" font-family="sans-serif" font-size="18">→</text>
+
+  <!-- Transformer Block x N -->
+  <rect x="580" y="45" width="190" height="340" rx="10" fill="#1e293b" stroke="#6366f1" stroke-width="2"/>
+  <text x="675" y="70" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="13" font-weight="bold">Transformer Block</text>
+  <text x="675" y="88" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="10">×N 层（GPT-3: 96层）</text>
+
+  <!-- Self-Attention -->
+  <rect x="600" y="100" width="150" height="50" rx="6" fill="#3a1a3a" stroke="#a855f7"/>
+  <text x="675" y="120" text-anchor="middle" fill="#d8b4fe" font-family="sans-serif" font-size="11" font-weight="bold">Multi-Head</text>
+  <text x="675" y="138" text-anchor="middle" fill="#d8b4fe" font-family="sans-serif" font-size="11" font-weight="bold">Self-Attention</text>
+
+  <!-- Add & Norm -->
+  <text x="675" y="168" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="9">Add &amp; LayerNorm</text>
+
+  <!-- FFN -->
+  <rect x="600" y="185" width="150" height="50" rx="6" fill="#1a3a1a" stroke="#22c55e"/>
+  <text x="675" y="205" text-anchor="middle" fill="#86efac" font-family="sans-serif" font-size="11" font-weight="bold">Feed Forward</text>
+  <text x="675" y="223" text-anchor="middle" fill="#86efac" font-family="sans-serif" font-size="11" font-weight="bold">Network</text>
+
+  <!-- Add & Norm -->
+  <text x="675" y="253" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="9">Add &amp; LayerNorm</text>
+
+  <!-- Repeat indicator -->
+  <text x="675" y="285" text-anchor="middle" fill="#6366f1" font-family="sans-serif" font-size="11">⋮</text>
+  <text x="675" y="305" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="10">重复 N 次</text>
+  <text x="675" y="325" text-anchor="middle" fill="#6366f1" font-family="sans-serif" font-size="11">⋮</text>
+
+  <!-- Attention detail box -->
+  <rect x="30" y="130" width="530" height="120" rx="8" fill="#1e293b" stroke="#a855f7" stroke-width="1"/>
+  <text x="295" y="155" text-anchor="middle" fill="#d8b4fe" font-family="sans-serif" font-size="13" font-weight="bold">Self-Attention 核心：每个词「注意到」句子中所有其他词</text>
+
+  <text x="60" y="185" fill="#94a3b8" font-family="monospace" font-size="11">输入："我  爱  AI" (3个token)</text>
+  <text x="60" y="205" fill="#93c5fd" font-family="monospace" font-size="11">Q(Query) × K(Key) = 注意力分数矩阵 (3×3)</text>
+  <text x="60" y="225" fill="#86efac" font-family="monospace" font-size="11">Softmax(分数) × V(Value) = 加权后的上下文表示</text>
+
+  <text x="295" y="242" text-anchor="middle" fill="#fbbf24" font-family="sans-serif" font-size="10">「AI」这个词会高度关注「我」和「爱」</text>
+
+  <!-- Output -->
+  <rect x="30" y="270" width="220" height="35" rx="6" fill="#1a3a1a" stroke="#22c55e"/>
+  <text x="140" y="293" text-anchor="middle" fill="#86efac" font-family="sans-serif" font-size="12" font-weight="bold">输出：下一个 token 的概率</text>
+
+  <!-- Bottom summary -->
+  <rect x="30" y="340" width="530" height="60" rx="8" fill="#1e293b" stroke="#6366f1" stroke-width="1"/>
+  <text x="295" y="362" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="12" font-weight="bold">Transformer = Embedding + Position + N×(Self-Attention + FFN)</text>
+  <text x="295" y="385" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="11">Attention 是核心创新 —— 让每个词能「看到」句子中所有其他词</text>
+
+</svg>

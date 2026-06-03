@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 340" fill="none">
+  <rect width="800" height="340" rx="14" fill="#0f172a"/>
+  <text x="400" y="35" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="17" font-weight="bold">LLM 工具选择流程</text>
+
+  <!-- User query -->
+  <rect x="30" y="60" width="200" height="40" rx="8" fill="#1e3a5f" stroke="#3b82f6"/>
+  <text x="130" y="86" text-anchor="middle" fill="#93c5fd" font-family="sans-serif" font-size="13" font-weight="bold">👤 "北京今天多少度?"</text>
+
+  <text x="250" y="86" fill="#6366f1" font-family="sans-serif" font-size="18">→</text>
+
+  <!-- Tool definitions -->
+  <rect x="280" y="55" width="260" height="50" rx="8" fill="#1e293b" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="410" y="75" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="11" font-weight="bold">可用的工具定义 (JSON Schema)</text>
+  <text x="410" y="93" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="10">get_weather(city) | search_web(query) | send_email(to, body)</text>
+
+  <text x="560" y="86" fill="#6366f1" font-family="sans-serif" font-size="18">→</text>
+
+  <!-- LLM decision -->
+  <rect x="590" y="55" width="180" height="50" rx="8" fill="#3a1a3a" stroke="#a855f7"/>
+  <text x="680" y="76" text-anchor="middle" fill="#d8b4fe" font-family="sans-serif" font-size="12" font-weight="bold">🧠 LLM 匹配</text>
+  <text x="680" y="95" text-anchor="middle" fill="#c084fc" font-family="monospace" font-size="10">选 → get_weather</text>
+
+  <!-- Three examples -->
+  <text x="400" y="145" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="13">不同问题 → 自动选择不同工具</text>
+
+  <!-- Example 1 -->
+  <rect x="30" y="170" width="230" height="80" rx="8" fill="#1e3a5f" stroke="#3b82f6"/>
+  <text x="145" y="195" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="12" font-weight="bold">查询："北京天气"</text>
+  <text x="145" y="218" text-anchor="middle" fill="#93c5fd" font-family="monospace" font-size="11">→ get_weather("北京")</text>
+  <text x="145" y="238" text-anchor="middle" fill="#60a5fa" font-family="sans-serif" font-size="11">🌤 天气工具</text>
+
+  <!-- Example 2 -->
+  <rect x="285" y="170" width="230" height="80" rx="8" fill="#1a3a1a" stroke="#22c55e"/>
+  <text x="400" y="195" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="12" font-weight="bold">查询："Claude最新消息"</text>
+  <text x="400" y="218" text-anchor="middle" fill="#86efac" font-family="monospace" font-size="11">→ search_web("Claude AI 2025")</text>
+  <text x="400" y="238" text-anchor="middle" fill="#4ade80" font-family="sans-serif" font-size="11">🔍 搜索工具</text>
+
+  <!-- Example 3 -->
+  <rect x="540" y="170" width="230" height="80" rx="8" fill="#3a2a0a" stroke="#eab308"/>
+  <text x="655" y="195" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="12" font-weight="bold">查询："发邮件给老板"</text>
+  <text x="655" y="218" text-anchor="middle" fill="#fde68a" font-family="monospace" font-size="11">→ send_email(to="boss", ...)</text>
+  <text x="655" y="238" text-anchor="middle" fill="#fbbf24" font-family="sans-serif" font-size="11">📧 邮件工具</text>
+
+  <!-- Bottom insight -->
+  <rect x="120" y="275" width="560" height="45" rx="8" fill="#1e293b" stroke="#6366f1" stroke-width="1"/>
+  <text x="400" y="295" text-anchor="middle" fill="#c084fc" font-family="sans-serif" font-size="12">关键：你只需要定义工具的 JSON Schema（名称、描述、参数），LLM 会自动匹配</text>
+  <text x="400" y="312" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="11">不需要写 if-else 规则！</text>
+
+</svg>

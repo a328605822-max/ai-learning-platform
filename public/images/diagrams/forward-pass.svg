@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 380" fill="none">
+  <rect width="800" height="380" rx="14" fill="#0f172a"/>
+  <text x="400" y="35" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="17" font-weight="bold">前向传播：输入 → 隐藏层 → 输出</text>
+
+  <!-- Input layer -->
+  <text x="60" y="310" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="11">输入层</text>
+  <circle cx="60" cy="100" r="18" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+  <circle cx="60" cy="170" r="18" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+  <circle cx="60" cy="240" r="18" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+  <text x="60" y="104" text-anchor="middle" fill="#93c5fd" font-family="monospace" font-size="10">x₁</text>
+  <text x="60" y="174" text-anchor="middle" fill="#93c5fd" font-family="monospace" font-size="10">x₂</text>
+  <text x="60" y="244" text-anchor="middle" fill="#93c5fd" font-family="monospace" font-size="10">x₃</text>
+
+  <!-- Weights and connections -->
+  <line x1="78" y1="100" x2="172" y2="80" stroke="#6366f1" stroke-width="0.8" opacity="0.5"/>
+  <line x1="78" y1="100" x2="172" y2="170" stroke="#6366f1" stroke-width="0.8" opacity="0.5"/>
+  <line x1="78" y1="100" x2="172" y2="260" stroke="#6366f1" stroke-width="0.8" opacity="0.5"/>
+  <line x1="78" y1="170" x2="172" y2="80" stroke="#6366f1" stroke-width="0.8" opacity="0.5"/>
+  <line x1="78" y1="170" x2="172" y2="170" stroke="#6366f1" stroke-width="0.8" opacity="0.5"/>
+  <line x1="78" y1="170" x2="172" y2="260" stroke="#6366f1" stroke-width="0.8" opacity="0.5"/>
+  <line x1="78" y1="240" x2="172" y2="80" stroke="#6366f1" stroke-width="0.8" opacity="0.5"/>
+  <line x1="78" y1="240" x2="172" y2="170" stroke="#6366f1" stroke-width="0.8" opacity="0.5"/>
+  <line x1="78" y1="240" x2="172" y2="260" stroke="#6366f1" stroke-width="0.8" opacity="0.5"/>
+
+  <text x="125" y="340" text-anchor="middle" fill="#6366f1" font-family="monospace" font-size="10">权重 W₁ 连接</text>
+
+  <!-- Hidden layer -->
+  <text x="200" y="310" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="11">隐藏层</text>
+  <circle cx="200" cy="80" r="18" fill="#3a1a3a" stroke="#a855f7" stroke-width="2"/>
+  <circle cx="200" cy="170" r="18" fill="#3a1a3a" stroke="#a855f7" stroke-width="2"/>
+  <circle cx="200" cy="260" r="18" fill="#3a1a3a" stroke="#a855f7" stroke-width="2"/>
+  <text x="200" y="84" text-anchor="middle" fill="#d8b4fe" font-family="monospace" font-size="10">h₁</text>
+  <text x="200" y="174" text-anchor="middle" fill="#d8b4fe" font-family="monospace" font-size="10">h₂</text>
+  <text x="200" y="264" text-anchor="middle" fill="#d8b4fe" font-family="monospace" font-size="10">h₃</text>
+
+  <!-- Formula box -->
+  <rect x="110" y="110" width="70" height="40" rx="6" fill="#1e293b" stroke="#6366f1"/>
+  <text x="145" y="128" text-anchor="middle" fill="#e2e8f0" font-family="monospace" font-size="9">h = σ(W₁x)</text>
+  <text x="145" y="142" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="8">ReLU激活</text>
+
+  <!-- Hidden to Output weights -->
+  <line x1="218" y1="80" x2="312" y2="170" stroke="#6366f1" stroke-width="0.8" opacity="0.5"/>
+  <line x1="218" y1="170" x2="312" y2="170" stroke="#6366f1" stroke-width="0.8" opacity="0.5"/>
+  <line x1="218" y1="260" x2="312" y2="170" stroke="#6366f1" stroke-width="0.8" opacity="0.5"/>
+
+  <text x="270" y="340" text-anchor="middle" fill="#6366f1" font-family="monospace" font-size="10">权重 W₂</text>
+
+  <!-- Output layer -->
+  <text x="340" y="310" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="11">输出层</text>
+  <circle cx="340" cy="170" r="18" fill="#1a3a1a" stroke="#22c55e" stroke-width="2"/>
+  <text x="340" y="174" text-anchor="middle" fill="#86efac" font-family="monospace" font-size="10">ŷ</text>
+
+  <!-- Formula box 2 -->
+  <rect x="260" y="200" width="55" height="30" rx="6" fill="#1e293b" stroke="#6366f1"/>
+  <text x="287" y="219" text-anchor="middle" fill="#e2e8f0" font-family="monospace" font-size="9">ŷ = W₂h</text>
+
+  <!-- Right side explanation -->
+  <rect x="420" y="55" width="350" height="310" rx="10" fill="#1e293b" stroke="#334155"/>
+  <text x="595" y="85" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="14" font-weight="bold">前向传播 = 一系列矩阵乘法</text>
+
+  <text x="440" y="120" fill="#94a3b8" font-family="monospace" font-size="11">输入 X (3×1) → 权重 W₁ (3×3) →</text>
+  <text x="440" y="140" fill="#94a3b8" font-family="monospace" font-size="11">  Z₁ = W₁·X (3×1) → ReLU →</text>
+  <text x="440" y="160" fill="#94a3b8" font-family="monospace" font-size="11">    h = ReLU(Z₁) (3×1) → 权重 W₂ (1×3) →</text>
+  <text x="440" y="180" fill="#94a3b8" font-family="monospace" font-size="11">      ŷ = W₂·h (1×1) 输出预测值</text>
+
+  <rect x="440" y="210" width="310" height="1" fill="#334155"/>
+
+  <text x="440" y="240" fill="#e2e8f0" font-family="sans-serif" font-size="12" font-weight="bold">关键公式</text>
+  <text x="440" y="268" fill="#93c5fd" font-family="monospace" font-size="12">h = ReLU(W₁·x + b₁)</text>
+  <text x="440" y="295" fill="#86efac" font-family="monospace" font-size="12">ŷ = W₂·h + b₂</text>
+  <text x="440" y="325" fill="#94a3b8" font-family="sans-serif" font-size="11">W = 权重（旋钮） b = 偏置（阈值）</text>
+  <text x="440" y="345" fill="#94a3b8" font-family="sans-serif" font-size="11">ReLU(x) = max(0, x) 激活函数</text>
+
+</svg>

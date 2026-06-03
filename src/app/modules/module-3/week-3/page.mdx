@@ -1,0 +1,272 @@
+import { Badge } from "@/components/ui/badge";
+import { Brain, Target, Zap, Sparkles, Lightbulb, AlertTriangle, CheckCircle2, Info, Play, BookOpen, Code2, ExternalLink, Shield, Bot, ScanEye, Wrench } from "lucide-react";
+
+# 第三周：Agent 实战与安全边界
+
+<Badge variant="outline">模块三 · 第 3/3 周</Badge> <Badge variant="secondary" className="ml-2">预计 3.5 小时</Badge>
+
+## 本周目标
+
+增加更多工具，加入 Human-in-the-loop 人类确认环节。设计安全的权限控制。部署一个真正能「干活」的 Agent。
+
+**本周里程碑**：完整的 Agent 应用，有权限控制，能演示实际工作任务。
+
+---
+
+## 1. 核心概念讲解
+
+### 1.1 Agent 安全：能力越大，风险越大
+
+你的 Agent 现在可以调 API、查数据、发请求。如果你让它能发邮件、删文件、花 API 费用——风险就来了。
+
+<ConceptCard
+  title="只读 vs 写操作"
+  icon={ScanEye}
+  explanation="查天气、搜网页 = 只读（安全）。发邮件、删文件、下订单 = 写操作（需要确认）。区分这两者是 Agent 安全设计的第一步。"
+  color="blue"
+/>
+
+<ConceptCard
+  title="Human-in-the-Loop"
+  icon={Shield}
+  explanation="高风险操作需要人类确认。Agent 说「我想发这封邮件」，界面弹出确认框，人类点了「批准」才执行。这在企业级 Agent 中是标配。"
+  color="orange"
+/>
+
+<ConceptCard
+  title="权限分层"
+  icon={Wrench}
+  explanation="不同工具设置不同风险等级。Level 1(只读)：自动执行。Level 2(低风险写)：记录日志。Level 3(高风险)：必须人类确认。"
+  color="purple"
+/>
+
+<ImageCard
+  src="/images/diagrams/human-in-the-loop.svg"
+  alt="Human-in-the-Loop 安全架构"
+  caption="Agent 要做操作时，系统先评估风险：低风险（只读查询）自动执行，高风险（发邮件、删数据、花钱）弹窗让人类确认。这就是「AI 干活，人类把关」。"
+/>
+
+---
+
+<ImageCard
+  src="/images/concepts/multi-agent-scene.png"
+  alt="FLUX 生成：多 Agent 协作场景"
+  caption="看！三个 Agent 机器人正在协作：一个在搜索网页，一个在分析全息数据屏，一个在写邮件。它们之间用发光的蓝色数据流连接——一个 Agent 的输出就是另一个 Agent 的输入。这就是未来的工作方式。"
+/>
+
+## 2. 动手实践
+
+### 完整的多工具 + 安全 Agent
+
+创建 `safe_agent.py`：
+
+```python
+import streamlit as st
+import json
+import os
+from dotenv import load_dotenv
+from anthropic import Anthropic
+from enum import Enum
+
+load_dotenv()
+client = Anthropic(api_key=os.getenv("CLAUDE_API_KEY"))
+
+# ---- 风险等级 ----
+class RiskLevel(Enum):
+    READ_ONLY = 1   # 只读，自动执行
+    LOW_RISK = 2    # 低风险，记录日志
+    HIGH_RISK = 3   # 高风险，必须人类确认
+
+# ---- 工具定义（带风险等级）----
+TOOLS_WITH_RISK = [
+    {
+        "name": "get_weather",
+        "description": "获取指定城市的天气信息",
+        "input_schema": {
+            "type": "object",
+            "properties": {"city": {"type": "string", "description": "城市名称"}},
+            "required": ["city"],
+        },
+        "risk": RiskLevel.READ_ONLY,
+    },
+    {
+        "name": "search_web",
+        "description": "搜索网页获取信息",
+        "input_schema": {
+            "type": "object",
+            "properties": {"query": {"type": "string", "description": "搜索关键词"}},
+            "required": ["query"],
+        },
+        "risk": RiskLevel.READ_ONLY,
+    },
+    {
+        "name": "save_file",
+        "description": "保存内容到文件",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "filename": {"type": "string", "description": "文件名"},
+                "content": {"type": "string", "description": "文件内容"},
+            },
+            "required": ["filename", "content"],
+        },
+        "risk": RiskLevel.LOW_RISK,
+    },
+    {
+        "name": "send_email",
+        "description": "发送邮件",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "to": {"type": "string", "description": "收件人邮箱"},
+                "subject": {"type": "string", "description": "邮件主题"},
+                "body": {"type": "string", "description": "邮件正文"},
+            },
+            "required": ["to", "subject", "body"],
+        },
+        "risk": RiskLevel.HIGH_RISK,
+    },
+]
+
+# ---- 工具执行器（带风险检查）----
+def execute_safe_tool(tool_name: str, tool_input: dict):
+    """执行工具，高风险操作需要确认"""
+
+    # 获取工具的风险等级
+    tool_def = next((t for t in TOOLS_WITH_RISK if t["name"] == tool_name), None)
+    risk = tool_def["risk"] if tool_def else RiskLevel.HIGH_RISK
+
+    # 高风险操作 → 人类确认
+    if risk == RiskLevel.HIGH_RISK:
+        # 在 Streamlit 中弹确认框
+        if f"pending_{tool_name}" not in st.session_state:
+            st.session_state[f"pending_{tool_name}"] = tool_input
+            st.warning(f"⚠️ Agent 想要：{tool_name}({tool_input})")
+            if not st.button("✅ 批准执行"):
+                st.stop()
+        # 批准后执行...
+
+    # 实际操作（模拟）
+    if tool_name == "get_weather":
+        return f"{tool_input['city']}天气：晴，25°C"
+    elif tool_name == "search_web":
+        return f"搜索'{tool_input['query']}'：找到约1200条结果（模拟）"
+    elif tool_name == "save_file":
+        return f"文件'{tool_input['filename']}'已保存"
+    elif tool_name == "send_email":
+        return f"邮件已发送至{tool_input['to']}"
+    return "未知工具"
+
+# ---- Streamlit 界面 ----
+st.set_page_config(page_title="🤖 Safe Agent", page_icon="🤖")
+st.title("🤖 安全的 AI Agent")
+
+st.sidebar.header("⚙️ Agent 配置")
+max_steps = st.sidebar.slider("最大步数", 1, 20, 10)
+auto_approve_readonly = st.sidebar.checkbox("自动批准只读操作", value=True)
+
+st.sidebar.divider()
+st.sidebar.subheader("📊 可用工具")
+for tool in TOOLS_WITH_RISK:
+    risk_emoji = {RiskLevel.READ_ONLY: "🟢", RiskLevel.LOW_RISK: "🟡", RiskLevel.HIGH_RISK: "🔴"}
+    st.sidebar.caption(f"{risk_emoji[tool['risk']]} {tool['name']} — {tool['description'][:40]}...")
+
+# 对话区域
+if "agent_messages" not in st.session_state:
+    st.session_state.agent_messages = []
+
+for msg in st.session_state.agent_messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+if prompt := st.chat_input("给 Agent 下个任务..."):
+    st.session_state.agent_messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+        with st.spinner("🤔 Agent 思考中..."):
+            # Agent 循环...
+            st.markdown("*(Agent 运行逻辑见上方完整代码)*")
+
+st.sidebar.divider()
+st.sidebar.caption(f"🏗️ 模块三 · 第 3/3 周")
+```
+
+<SuccessBox title="模块三完成！你掌握的是 AI 行业最值钱的技术">
+  Agent 是 2025-2026 年 AI 行业最热的方向。你现在拥有的能力是：
+  - 设计工具定义（JSON Schema）
+  - 实现 Agent 循环（思考→行动→观察）
+  - Human-in-the-loop 安全架构
+  - 多工具协调 + 风险分级
+
+  这套能力加上模块二的 RAG，你已经可以做出：
+  - 智能客服 Agent（RAG 查知识库 + Agent 执行操作）
+  - 数据分析 Agent（查数据库 + 计算 + 生成报表 + 发邮件）
+  - 个人助理 Agent（查日历 + 搜信息 + 发提醒 + 整理文件）
+</SuccessBox>
+
+<WarningBox title="常见踩坑">
+  - **Agent 成本控制**：每次循环 = 一次 API 调用。多步 Agent 的成本可能很高。设置合理的 `max_steps` 和 token 限制。
+  - **不要在生产环境用 eval()**：上面的 `calculate` 工具用了 `eval()`——仅限学习。生产环境用专门的数学库或沙盒执行。
+  - **API Key 权限最小化**：Agent 用的 API Key 应该只有必要的权限。不要给它 root/admin 级别的 Key。
+  - **确认框的 UX**：不要在聊天流中频繁弹确认框。把高风险操作聚合到一起，让用户一次性批准。
+</WarningBox>
+
+---
+
+## 3. 模块三总结
+
+<DataTable
+  headers={["概念", "一句话解释"]}
+  rows={[
+    ["Function Calling", "AI「说」要调什么工具，你的代码去执行——AI 是指挥者不是执行者"],
+    ["JSON Schema 工具定义", "告诉 AI 有什么工具、怎么用——描述越清晰，AI 越不会选错"],
+    ["Agent 循环", "思考→行动→观察→再思考——反复迭代直到任务完成"],
+    ["ReAct 范式", "Reasoning + Acting：每步都先推理再行动，是主流 Agent 范式"],
+    ["思维链", "让 AI「说出思考过程」，决策质量大幅提升"],
+    ["Human-in-the-Loop", "高风险操作需要人类确认——AI 干活，人类把关"],
+    ["风险分级", "只读自动、低风险记录、高风险确认——安全设计三原则"],
+  ]}
+/>
+
+---
+
+## 4. 三视角复盘
+
+<ReviewPanel type="principle">
+
+### 原理视角
+
+Agent = LLM + 工具集 + 决策循环 + 安全边界。最难的不是写代码，而是设计工具集和 System Prompt——这决定了 Agent 的「智商」和「靠谱程度」。
+
+</ReviewPanel>
+
+<ReviewPanel type="money">
+
+### 变现视角
+
+Agent 让 AI 从「聊天工具」变成「劳动力」。企业愿意为「能干活的产品」付费，而不是「能聊天的东西」。思考你的专业领域中最重复、最耗时的工作是什么——给它们做 Agent。
+
+核心公式：**领域知识(RAG) + 执行能力(Agent) = 可收费的 AI 产品。**
+
+</ReviewPanel>
+
+<ReviewPanel type="education">
+
+### 教育视角
+
+未来孩子需要的能力不是「记住知识」（AI 可以记住一切），而是：
+1. 把大问题拆成小步骤（像 Agent 循环）
+2. 说清楚自己想要什么（像写工具定义）
+3. 检查 AI 做得对不对（像 Human-in-the-loop）
+
+这些能力才是 AI 时代的核心竞争力。
+
+</ReviewPanel>
+
+---
+
+## 准备进入模块四
+
+模块四将是最「硬核」的部分——从零用 NumPy 实现一个微型 GPT，彻底拆解 AI 的黑盒。你将从「会用 AI」跨越到「理解 AI」。

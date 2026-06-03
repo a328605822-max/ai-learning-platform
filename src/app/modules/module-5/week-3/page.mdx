@@ -1,0 +1,82 @@
+import { Badge } from "@/components/ui/badge";
+import { Brain, Target, Zap, Sparkles, Lightbulb, AlertTriangle, CheckCircle2, Info, Play, BookOpen, Code2, ExternalLink, Globe } from "lucide-react";
+
+# 第三周：部署上线——让全世界看到你的产品
+
+<Badge variant="outline">模块五 · 第 3/4 周</Badge> <Badge variant="secondary" className="ml-2">预计 3.5 小时</Badge>
+
+## 本周目标
+
+选择合适的部署平台，配置环境变量和域名。确保产品 24 小时可访问，做好基本的错误处理和日志。
+
+**本周里程碑**：产品上线，有一个可分享的 URL。
+
+---
+
+## 1. 部署平台选择
+
+<ImageCard
+  src="/images/concepts/deployment-architecture.png"
+  alt="FLUX 生成：部署架构全景图"
+  caption="你的应用从本地电脑通过发光管道飞上云端，然后被世界各地的手机、平板、电脑访问。部署就是把代码从「只有你能用」变成「全世界都能用」。"
+/>
+
+<ImageCard
+  src="/images/diagrams/deploy-compare.svg"
+  alt="免费部署方案对比"
+  caption="三个主流免费方案。Streamlit Cloud 最简单，Vercel 性能最好，Railway 最灵活。选最符合你技术栈的那个——能跑就行，别纠结平台选型。"
+/>
+
+### 部署检查清单
+
+```markdown
+□ 环境变量全部配置（API Key 等）
+□ .env 文件在 .gitignore 中
+□ API Key 没有硬编码在代码里
+□ CORS 配置正确（如果前后端分离）
+□ 基本错误页面（500/404）
+□ 日志输出正常
+□ 从公网能正常访问
+□ 手机端也能打开
+```
+
+### 环境变量管理
+
+```python
+# 正确的方式：从环境变量读取
+import os
+api_key = os.getenv("CLAUDE_API_KEY")
+
+# 部署时在平台后台设置环境变量（不要写在代码里！）
+# Streamlit Cloud: Settings → Secrets
+# Vercel: Settings → Environment Variables
+# Railway: Variables
+```
+
+<WarningBox title="安全红线">
+  1. API Key 绝不出现在 GitHub 上
+  2. 每个部署平台的 Secret 都是独立配置的
+  3. 如果 Key 意外泄露了——立刻在 API 后台 revoke 并重新生成
+  4. 生产环境用只读权限的 API Key（最小权限原则）
+</WarningBox>
+
+---
+
+## 2. 三视角复盘
+
+<ReviewPanel type="principle">
+部署就是把代码从「你的电脑」搬到「互联网上的服务器」。现代平台让这一步极其简单——连接 GitHub 仓库，自动部署。核心挑战不是技术，而是配置管理（环境变量、权限、监控）。
+</ReviewPanel>
+
+<ReviewPanel type="money">
+一个可分享的 URL = 你的产品从「项目」变成了「产品」。它是你和用户之间的桥梁。有了它，你可以：发给朋友测试、分享到社交媒体、让潜在用户试用。
+</ReviewPanel>
+
+<ReviewPanel type="education">
+「爸爸做的这个东西，全世界的人都能在互联网上访问它」。让孩子亲眼看到从「想法」→「代码」→「可访问的网站」的完整过程，比任何编程课都有价值。
+</ReviewPanel>
+
+---
+
+## 下周预告
+最后一周——找 5-10 个人试用，收集真实反馈，快速迭代一版。这是从「写着玩」到「做产品」最关键的一步。

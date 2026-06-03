@@ -1,0 +1,350 @@
+import { Badge } from "@/components/ui/badge";
+import { Brain, Target, Zap, Sparkles, Lightbulb, AlertTriangle, CheckCircle2, Info, Play, BookOpen, Code2, ExternalLink, Search, Layers, FileText } from "lucide-react";
+
+# 第三周：RAG 实战——会读书的 AI 助手
+
+<Badge variant="outline">模块二 · 第 3/3 周</Badge> <Badge variant="secondary" className="ml-2">预计 3.5 小时</Badge>
+
+## 本周目标
+
+把前两周的 Embedding 和向量数据库连起来，完成端到端的 RAG 系统。上传你的 PDF/笔记，AI 能基于它们回答问题，并标注信息来源。
+
+**本周里程碑**：完整的文档问答系统上线，能标注每条回答的出处。
+
+---
+
+## 1. RAG 全流程解析
+
+### 1.1 RAG 到底做了什么？
+
+RAG 是 Retrieval-Augmented Generation 的缩写，拆开看：
+
+<ConceptCard
+  title="Retrieval（检索）"
+  icon={Search}
+  explanation="用户提问 → 把问题转成 Embedding → 在向量数据库里找到最相关的 K 个文档块。这一步对应我们前两周学的内容。"
+  color="blue"
+/>
+
+<ConceptCard
+  title="Augmented（增强）"
+  icon={Layers}
+  explanation="把检索到的文档块和用户问题拼在一起，构建一个「增强版」的 Prompt。相当于在问 AI 之前，先把参考资料贴在问题下面。"
+  color="orange"
+/>
+
+<ConceptCard
+  title="Generation（生成）"
+  icon={Sparkles}
+  explanation="把增强版 Prompt 发给 LLM，LLM 基于提供的资料生成回答——不再瞎编，而是有据可查。"
+  color="purple"
+/>
+
+<ImageCard
+  src="/images/concepts/rag-full-pipeline.png"
+  alt="FLUX 生成：RAG 完整管道流程场景图"
+  caption="RAG 管道的全景图：文档(左) → 自动分块 → 每块转成向量(彩色数字) → 存入向量数据库(圆柱) → 用户提问 → 检索最相关块 → LLM 基于检索结果生成有据可查的回答(右)。整个过程就像 AI 先翻书再答题。"
+/>
+
+### 1.2 RAG Prompt 模板——最关键的一环
+
+Prompt 怎么写直接影响 RAG 的质量。一个经典的 RAG Prompt 模板：
+
+```
+你是一个基于文档库回答问题的 AI 助手。
+
+## 规则
+1. 只根据下面提供的「参考资料」回答问题
+2. 如果参考资料中没有相关信息，直接说「根据现有资料无法回答」
+3. 回答时标注引用的文档编号，例如 [来源: doc_3]
+4. 不要编造参考资料中没有的信息
+
+## 参考资料
+{这里插入检索到的文档块}
+
+## 用户问题
+{用户的问题}
+
+## 你的回答
+```
+
+<TipBox title="Prompt 设计对 RAG 至关重要" icon={Lightbulb}>
+  一个好的 RAG Prompt 要做三件事：
+  1. **约束**：告诉 LLM 只能基于参考资料回答
+  2. **诚实**：没有相关信息时允许它说「不知道」
+  3. **可追溯**：要求标注来源，让用户能验证
+</TipBox>
+
+<ImageCard
+  src="/images/diagrams/rag-pipeline.svg"
+  alt="RAG 完整管道流程"
+  caption="RAG 管道的技术流程：用户提问 → Embedding → 向量检索 → 拼接 Prompt → LLM 生成 → 有据可查的回答。整个流程不到 2 秒。"
+/>
+
+---
+
+## 2. 动手实践：构建完整 RAG 系统
+
+### 完整代码
+
+创建 `rag_app.py`：
+
+```python
+import streamlit as st
+import os
+import chromadb
+from chromadb.utils import embedding_functions
+from anthropic import Anthropic
+from dotenv import load_dotenv
+import PyPDF2  # pip install PyPDF2
+import io
+
+load_dotenv()
+
+# ---- 页面配置 ----
+st.set_page_config(page_title="📚 文档问答 AI", page_icon="📚")
+st.title("📚 让 AI 读你的文档")
+
+# ---- 初始化 ----
+client = Anthropic(api_key=os.getenv("CLAUDE_API_KEY"))
+chroma_client = chromadb.PersistentClient(path="./rag_db")
+
+@st.cache_resource
+def get_collection():
+    return chroma_client.get_or_create_collection(
+        name="user_docs",
+        embedding_function=embedding_functions.OpenAIEmbeddingFunction(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            model_name="text-embedding-3-small"
+        )
+    )
+
+collection = get_collection()
+
+# ---- 文档上传 ----
+st.sidebar.header("📄 上传文档")
+uploaded_file = st.sidebar.file_uploader(
+    "支持 PDF 和 TXT",
+    type=["pdf", "txt"],
+    accept_multiple_files=False
+)
+
+def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]:
+    chunks = []
+    start = 0
+    while start < len(text):
+        end = min(start + chunk_size, len(text))
+        if end < len(text):
+            for sep in ["。\n", "。", "\n", "，"]:
+                last_sep = text.rfind(sep, start, end)
+                if last_sep > start + chunk_size * 0.5:
+                    end = last_sep + 1
+                    break
+        chunk = text[start:end].strip()
+        if chunk:
+            chunks.append(chunk)
+        start = end - overlap
+    return chunks
+
+if uploaded_file:
+    # 读取文件
+    if uploaded_file.type == "application/pdf":
+        reader = PyPDF2.PdfReader(io.BytesIO(uploaded_file.read()))
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() + "\n"
+    else:
+        text = uploaded_file.read().decode("utf-8")
+
+    st.sidebar.success(f"✅ 已读取 {len(text)} 个字符")
+
+    # 分块
+    chunks = chunk_text(text, chunk_size=500, overlap=50)
+    st.sidebar.info(f"✂️ 切成 {len(chunks)} 个块")
+
+    # 存入向量数据库
+    if st.sidebar.button("📥 存入知识库"):
+        with st.spinner("正在向量化文档..."):
+            collection.add(
+                documents=chunks,
+                ids=[f"chunk_{i}" for i in range(len(chunks))],
+            )
+        st.sidebar.success(f"✅ 已存入 {len(chunks)} 个文档块！")
+
+# ---- 问答区域 ----
+st.header("💬 基于文档提问")
+
+query = st.text_input("输入你的问题：", placeholder="例如：这份文档主要讲了什么？")
+
+if query:
+    # Step 1: 检索
+    with st.spinner("🔍 正在检索相关文档..."):
+        results = collection.query(
+            query_texts=[query],
+            n_results=3,
+        )
+
+        retrieved_docs = results["documents"][0]
+        doc_ids = results["ids"][0]
+
+        # 显示检索结果
+        with st.expander(f"📎 检索到 {len(retrieved_docs)} 个相关文档块", expanded=False):
+            for i, (doc_id, doc_text) in enumerate(zip(doc_ids, retrieved_docs)):
+                st.caption(f"**[来源: {doc_id}]** (相关度 #{i+1})")
+                st.text(doc_text[:300] + "...")
+
+    # Step 2&3: 增强 + 生成
+    with st.spinner("🤔 AI 正在基于文档思考..."):
+        # 构建 RAG Prompt
+        context = "\n\n---\n\n".join([
+            f"[来源: {doc_id}]\n{doc_text}"
+            for doc_id, doc_text in zip(doc_ids, retrieved_docs)
+        ])
+
+        rag_prompt = f"""你是一个基于文档库回答问题的 AI 助手。
+
+## 规则
+1. 只根据下面提供的「参考资料」回答问题
+2. 如果参考资料中没有相关信息，直接说「根据现有资料无法回答」
+3. 回答时标注引用的来源编号
+4. 不要编造参考资料中没有的信息
+
+## 参考资料
+{context}
+
+## 用户问题
+{query}
+
+## 你的回答"""
+
+        # 调用 LLM
+        response = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=500,
+            system="你是一个严谨的 AI 助手。你只基于提供的参考资料回答问题，绝不编造。",
+            messages=[{"role": "user", "content": rag_prompt}]
+        )
+
+        ai_reply = response.content[0].text
+
+        # 显示回答
+        st.subheader("🤖 AI 回答")
+        st.markdown(ai_reply)
+
+        # 显示 token 使用
+        usage = response.usage
+        st.caption(
+            f"📊 检索到 {len(retrieved_docs)} 个文档块 · "
+            f"输入 {usage.input_tokens} tokens · "
+            f"输出 {usage.output_tokens} tokens"
+        )
+
+# ---- 统计信息 ----
+st.sidebar.divider()
+st.sidebar.caption(f"📚 知识库文档块总数：{collection.count()}")
+```
+
+### 运行
+
+```bash
+pip install streamlit chromadb anthropic openai python-dotenv PyPDF2
+streamlit run rag_app.py
+```
+
+<SuccessBox title="如果你跑通了">
+  恭喜！你已经掌握了 90% 企业级 AI 应用的底层技术。你现在拥有的是：
+  - 一个可上传文档的知识库系统
+  - 语义搜索能力（不只是关键词匹配）
+  - LLM 基于文档的「有据可查」的回答
+  - 来源标注，用户可以追溯验证
+
+  这就是客服机器人、法律助手、医疗顾问背后的核心技术架构。
+</SuccessBox>
+
+<WarningBox title="常见踩坑">
+  - **PDF 中文乱码**：PyPDF2 对中文字体支持不完美。考虑用 `pdfplumber` 替代，或者直接用 TXT 格式。
+  - **OpenAI Embedding API 需要单独申请**：不同于 ChatGPT API，Embedding API 也需要在 OpenAI 后台开通。
+  - **检索结果不相关**：试试调整 Chunk Size（更小 = 更精准但缺上下文），或者增加 `n_results` 参数。
+  - **回答太长超出上下文**：控制检索返回的文档块数量和每块大小，确保总 token 数在模型上下文窗口内。
+</WarningBox>
+
+<ImageCard
+  src="/images/concepts/rag-vs-pure-llm.png"
+  alt="FLUX 生成：RAG vs 纯 LLM 对比"
+  caption="左边是没有 RAG 的 AI——满头问号，胡编乱造（幻觉）。右边是有了 RAG 的 AI——自信地翻着书回答，每个答案都带着来源引用。这就是「AI 胡说」和「AI 靠谱」之间的差距。而这差距只隔了一个 RAG。"
+/>
+
+---
+
+## 3. 模块二总结
+
+恭喜！你已经完成了 AI 学习的第二个模块。回顾你这三周：
+
+### 你做出的东西
+- 一个**会读文档的 AI 问答机器人**——上传 PDF，它就能基于文档回答问题
+
+### 你搞懂的核心概念
+
+<DataTable
+  headers={["概念", "一句话解释"]}
+  rows={[
+    ["Embedding（嵌入向量）", "把「意思」变成数字坐标"],
+    ["余弦相似度", "衡量两个向量「方向有多近」的数学工具"],
+    ["向量数据库", "专门存向量 + 快速找最近邻居的数据库"],
+    ["Chunking（分块）", "把长文档切成小块，是 RAG 最关键的设计决策"],
+    ["RAG 全流程", "检索 → 增强 Prompt → 生成有据可查的回答"],
+    ["语义搜索", "理解意思而非仅匹配字面——RAG 的检索基础"],
+  ]}
+/>
+
+### 你的变现认知
+- RAG + 垂直领域知识 = 可收费的 B 端 AI 产品
+- 差异化竞争力不在于代码，在于你精心整理的领域文档
+- 客服、法律、医疗、教育——所有知识密集型行业都可以被 RAG 改造
+
+### 你的教育素材
+- 「Embedding 是 AI 的语义世界地图」
+- 「向量数据库是魔法图书馆索引」
+- 「RAG 是开卷考试——先翻书再答题」
+
+---
+
+## 4. 三视角复盘
+
+<ReviewPanel type="principle">
+
+### 原理视角
+
+Embedding + 向量检索 + LLM 生成 = RAG。每个环节我都能说清楚它干了什么、为什么这样设计。Chunking 的大小选择和重叠策略直接影响 RAG 质量——这是工程上最需要调参的地方。
+
+</ReviewPanel>
+
+<ReviewPanel type="money">
+
+### 变现视角
+
+我这套 RAG 代码改一改就能变成：
+- 公司内部知识库问答（上传公司文档 → 员工问 AI）
+- 在线课程答疑助手（上传教材 → 学生问 AI）
+- 法律合同审阅助手（上传合同 → AI 概括关键条款）
+
+技术完全一样，变得的是上传的文档。**差异化在文档，不在代码。**
+
+</ReviewPanel>
+
+<ReviewPanel type="education">
+
+### 教育视角
+
+未来孩子做作业的场景：
+「爸爸，这个问题我不知道答案。」→ 「让我们把课本上传给 AI，然后问它。但你也要看看 AI 参考了课本的哪一页——因为 AI 也可能理解错。」
+
+教孩子的是：**AI 是工具，不是权威。查来源、做验证，是永远需要的批判性思维。**
+
+</ReviewPanel>
+
+---
+
+## 准备进入模块三
+
+模块三将让 AI 从「能说」进化到「能做」——不再是按文档回答问题，而是能调用工具、搜索信息、执行任务。Agent（智能体）是 2025-2026 年 AI 最热的方向，也是变现价值最高的赛道。

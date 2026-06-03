@@ -1,0 +1,307 @@
+import { Badge } from "@/components/ui/badge";
+import { Brain, Target, Zap, Sparkles, Lightbulb, AlertTriangle, CheckCircle2, Info, Play, BookOpen, Code2, ExternalLink, Wrench, Settings } from "lucide-react";
+
+# 第一周：Function Calling——给 AI 装上「手」
+
+<Badge variant="outline">模块三 · 第 1/3 周</Badge> <Badge variant="secondary" className="ml-2">预计 3.5 小时</Badge>
+
+## 本周目标
+
+学习 Function Calling 的核心机制。定义工具函数，让 AI 知道什么时候调用哪个工具，理解 JSON Schema 在其中的作用。
+
+**本周里程碑**：AI 能调用至少 2 个工具（如查天气、算数学），你理解「AI 不直接执行代码」这个关键认知。
+
+---
+
+## 1. 核心概念讲解
+
+### 1.1 一个重要认知：AI 不直接「做」任何事
+
+在模块一和模块二中，你和 AI 的交互模式是：
+
+```
+你问 → AI 回答
+```
+
+Agent 的交互模式变成了：
+
+```
+你下任务 → AI 说「我想调这个工具」→ 你的代码去调 → 结果还给 AI → AI 继续思考 → 循环
+```
+
+<KeyPoint emoji="🎯">
+  **AI 不直接调用任何 API，不直接操作任何文件，不直接发送任何请求。它只是「说」想做什么——真正执行的是你的代码。** 这个认知是整个 Agent 学习的基础。
+</KeyPoint>
+
+<ImageCard
+  src="/images/concepts/function-calling-concept.png"
+  alt="FLUX 生成：Function Calling 概念插图"
+  caption="机器人坐在控制台前，但它不自己按按钮——它告诉人类程序员该按哪个。这就是 Function Calling 的本质：AI 是「指挥者」，你的代码才是「执行者」。"
+/>
+
+### 1.2 Function Calling 的工作原理
+
+<ImageCard
+  src="/images/diagrams/function-calling-flow.svg"
+  alt="Function Calling 机制流程图"
+  caption="Function Calling 的完整流程：用户说「北京天气」→ LLM 分析后返回函数调用请求 → 你的代码执行 get_weather('北京') → API 返回 25°C → LLM 基于结果生成「今天25°C晴天」。AI 是「指挥者」，你的代码是「执行者」。"
+/>
+
+这个过程有三个关键角色：
+
+<ConceptCard
+  title="LLM（决策者）"
+  icon={Brain}
+  explanation="分析用户意图，决定是否需要调用工具、调用哪个工具、传什么参数。它「说」要什么，但不自己做。"
+  color="blue"
+/>
+
+<ConceptCard
+  title="工具定义（菜单）"
+  icon={Settings}
+  explanation="你告诉 LLM 有哪些工具可用——每个工具的用途、参数类型、参数说明。LLM 根据这个「菜单」来选工具。"
+  color="orange"
+/>
+
+<ConceptCard
+  title="你的代码（执行者）"
+  icon={Wrench}
+  explanation="接收 LLM 的函数调用请求，真正去执行。执行完后把结果还回去。你是 LLM 和现实世界之间的桥梁。"
+  color="purple"
+/>
+
+<ImageCard
+  src="/images/concepts/tool-schema.png"
+  alt="FLUX 生成：JSON Schema 工具定义可视化"
+  caption="每张全息卡片上定义了一个工具——名称、描述、参数。LLM 扫描这些卡片，然后根据用户的意图选最合适的那张。工具定义写得越清晰，AI 越不会选错。"
+/>
+
+### 1.3 工具选择：AI 怎么知道该用哪个？
+
+<ImageCard
+  src="/images/diagrams/tool-selection-flow.svg"
+  alt="LLM 工具选择流程"
+  caption="你不需要写 if-else 规则！你只需要用 JSON Schema 描述每个工具——名称、用途、参数——LLM 会自动根据用户意图匹配正确的工具。"
+/>
+
+---
+
+## 2. 动手实践
+
+### 第一步：定义工具（JSON Schema）
+
+创建 `tools.py`：
+
+```python
+# 工具定义 —— 告诉 AI 你能做什么
+WEATHER_TOOL = {
+    "name": "get_weather",
+    "description": "获取指定城市的当前天气信息，包括温度、湿度、天气状况",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "city": {
+                "type": "string",
+                "description": "城市名称，例如：北京、上海、东京",
+            }
+        },
+        "required": ["city"],
+    },
+}
+
+CALCULATOR_TOOL = {
+    "name": "calculate",
+    "description": "计算数学表达式的结果。支持加减乘除、幂运算、三角函数等",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "expression": {
+                "type": "string",
+                "description": "数学表达式，例如：'2 + 3 * 4' 或 'sqrt(16)'",
+            }
+        },
+        "required": ["expression"],
+    },
+}
+
+WEB_SEARCH_TOOL = {
+    "name": "search_web",
+    "description": "搜索互联网获取最新信息。当用户问实时信息或你不知道的事时使用",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "搜索关键词",
+            }
+        },
+        "required": ["query"],
+    },
+}
+
+# 工具注册表
+TOOLS = [WEATHER_TOOL, CALCULATOR_TOOL, WEB_SEARCH_TOOL]
+```
+
+### 第二步：实现工具执行器
+
+```python
+# tool_executor.py
+import math
+import requests
+
+def execute_tool(tool_name: str, tool_input: dict) -> str:
+    """执行工具调用，返回结果字符串"""
+
+    if tool_name == "get_weather":
+        city = tool_input["city"]
+        # 模拟天气数据（实际项目中接入真实天气 API）
+        weather_data = {
+            "北京": "晴，25°C，湿度 45%",
+            "上海": "多云，28°C，湿度 65%",
+            "东京": "小雨，22°C，湿度 80%",
+        }
+        return weather_data.get(city, f"{city}：数据暂不可用")
+
+    elif tool_name == "calculate":
+        expression = tool_input["expression"]
+        try:
+            result = eval(expression, {"__builtins__": {}}, {"sqrt": math.sqrt, "sin": math.sin, "cos": math.cos, "pi": math.pi})
+            return f"计算结果：{result}"
+        except Exception as e:
+            return f"计算出错：{e}"
+
+    elif tool_name == "search_web":
+        query = tool_input["query"]
+        return f"搜索「{query}」的结果（模拟）：找到相关网页约 1,200 条..."
+
+    else:
+        return f"未知工具：{tool_name}"
+```
+
+<TipBox title="Agent 模拟数据 vs 真实 API" icon={Lightbulb}>
+  学习阶段用模拟数据没问题——重点理解 Function Calling 的流程和逻辑。等流程跑通了再替换成真实的 API（天气 API、Google Search API 等）。
+</TipBox>
+
+### 第三步：整合到 Agent 循环
+
+创建 `agent.py`——这是你的第一个 Agent！
+
+```python
+# agent.py
+import json
+import os
+from dotenv import load_dotenv
+from anthropic import Anthropic
+from tools import TOOLS
+from tool_executor import execute_tool
+
+load_dotenv()
+client = Anthropic(api_key=os.getenv("CLAUDE_API_KEY"))
+
+def run_agent(user_task: str, max_steps: int = 5):
+    """运行 Agent 循环"""
+    messages = [{"role": "user", "content": user_task}]
+
+    print(f"🎯 任务：{user_task}\n")
+
+    for step in range(max_steps):
+        print(f"--- Step {step + 1} ---")
+
+        # 让 LLM 决定下一步
+        response = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=300,
+            system="你是一个 AI Agent。你可以使用工具来完成任务。如果需要调用工具，说明工具名和参数。如果任务已可以回答，直接给出回复。",
+            tools=TOOLS,
+            messages=messages,
+        )
+
+        # 检查是否有工具调用
+        if response.stop_reason == "tool_use":
+            tool_call = response.content[-1]  # 获取工具调用
+            tool_name = tool_call.name
+            tool_input = tool_call.input
+
+            print(f"  🤔 AI 决定调用：{tool_name}({tool_input})")
+
+            # 执行工具
+            result = execute_tool(tool_name, tool_input)
+            print(f"  ✅ 工具返回：{result}")
+
+            # 把工具调用和结果都加入对话
+            messages.append({"role": "assistant", "content": response.content})
+            messages.append({
+                "role": "user",
+                "content": [{"type": "tool_result", "tool_use_id": tool_call.id, "content": result}]
+            })
+
+        else:
+            # 没有工具调用，任务完成
+            print(f"  💬 AI 回答：{response.content[0].text}")
+            return response.content[0].text
+
+    print("⚠️ 达到最大步数限制")
+
+# 测试
+if __name__ == "__main__":
+    run_agent("北京今天天气怎么样？")
+    print("\n" + "="*50 + "\n")
+    run_agent("帮我算一下 123 * 456 + 789")
+```
+
+<WarningBox title="常见踩坑">
+  - **Tool Use API 需要特定模型**：不是所有模型都支持 Tool Use。Claude 的 Haiku/Sonnet/Opus 都支持，确保用对模型。
+  - **工具定义要清晰**：JSON Schema 的 `description` 字段非常关键——它是 LLM 判断「什么时候用这个工具」的唯一依据。
+  - **工具执行出错要有优雅处理**：不要让 Agent 因为一次 API 超时就崩溃。用 try/except 包裹每个工具。
+  - **注意 API 成本**：每次 Agent 循环都会调一次 API。设好 `max_steps` 上限避免死循环。
+</WarningBox>
+
+---
+
+## 3. 三视角复盘
+
+<ReviewPanel type="principle">
+
+### 原理视角
+
+Function Calling 不是 AI 在「执行代码」——是 AI 在「描述它想执行什么」。你的代码是中间人。这个设计是故意的：它让 AI 的行为可控（你的代码可以拒绝执行）、可审计（记录所有工具调用）、可沙盒化（工具运行在隔离环境）。
+
+</ReviewPanel>
+
+<ReviewPanel type="money">
+
+### 变现视角
+
+Function Calling 是 Agent 的原子操作。你能调用的工具越多，Agent 能做的事情就越多。思考你的领域需要什么工具——房产 Agent 需要查房源+算贷款+约看房；电商 Agent 需要查库存+下订单+发物流。
+
+**一个特定领域的 Agent = 一套精心设计的工具 + 一个精心调试的 System Prompt。**
+
+</ReviewPanel>
+
+<ReviewPanel type="education">
+
+### 教育视角
+
+**怎么给孩子讲 Function Calling？**
+
+「你每天都会用工具对吧？你饿了不会自己用手炒菜——你会叫妈妈（调用工具）。AI 也一样，它不会自己查天气——它会说：'请帮我查北京的天气'，然后等人帮它查，查完再告诉它结果。它就是那个只会指挥，不会动手的小朋友。」
+
+</ReviewPanel>
+
+---
+
+## 4. 延伸资源
+
+<ResourceLink
+  title="Claude Tool Use 官方文档"
+  url="https://docs.anthropic.com/en/docs/build-with-claude/tool-use"
+  type="article"
+  description="Claude 官方的 Tool Use 指南，包含完整的 API 示例和最佳实践。"
+/>
+
+---
+
+## 下周预告
+
+下周我们将把 Function Calling 升级为完整的 Agent 循环——不是一次调用就结束，而是反复「思考→行动→观察」，直到完成复杂任务。

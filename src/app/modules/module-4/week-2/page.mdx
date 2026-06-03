@@ -1,0 +1,165 @@
+import { Badge } from "@/components/ui/badge";
+import { Brain, Target, Zap, Sparkles, Lightbulb, AlertTriangle, CheckCircle2, Info, Play, BookOpen, Code2, ExternalLink, TrendingDown } from "lucide-react";
+
+# 第二周：反向传播——AI 学习的核心秘密
+
+<Badge variant="outline">模块四 · 第 2/4 周</Badge> <Badge variant="secondary" className="ml-2">预计 3.5 小时</Badge>
+
+## 本周目标
+
+手工推导反向传播的数学过程，用代码实现自动梯度计算。理解链式法则在神经网络中的应用，亲眼看到 Loss 曲线下降。
+
+**本周里程碑**：实现完整的前向+反向传播，训练一个 3 层网络做 MNIST 手写数字分类。
+
+---
+
+## 1. 核心概念讲解
+
+### 1.1 什么是「学习」？——猜错了的惩罚
+
+神经网络「学习」的过程：
+
+```
+1. 前向传播：输入 → 网络 → 预测值 ŷ
+2. 计算损失：Loss = |ŷ - 真实值|² （预测和真实差了多少）
+3. 反向传播：算每个参数对 Loss 的「贡献」（梯度）
+4. 参数更新：W = W - 学习率 × 梯度 （往减少 Loss 的方向微调）
+5. 重复 1-4，直到 Loss 足够小
+```
+
+<KeyPoint emoji="🎯">
+  梯度 = 「这个参数变一点点，Loss 会变多少」。梯度为正 → 增大这个参数会让 Loss 变大 → 应该减小它。梯度为负 → 增大这个参数会让 Loss 变小 → 应该增大它。
+</KeyPoint>
+
+<ImageCard
+  src="/images/concepts/backpropagation-visual.png"
+  alt="FLUX 生成：反向传播可视化"
+  caption="蓝色是前向传播（数据流向前），橙红色是反向传播（误差流回来）。每个小旋钮（权重）都被微调一点点——这就是 1750 亿个参数同时被调优的过程。"
+/>
+
+<ImageCard
+  src="/images/diagrams/backprop-chain.svg"
+  alt="反向传播链式法则"
+  caption="链式法则的核心：从输出端算梯度，逐层往回传。∂Loss/∂W₁ = ∂Loss/∂ŷ × ∂ŷ/∂h × ∂h/∂W₁。每一层只负责把自己的梯度乘以「上游传下来的梯度」。"
+/>
+
+### 1.2 梯度下降：跟着坡度往下滑
+
+想象你蒙着眼睛站在山上，想走到山谷最低点。你只能感受到脚下的坡度——沿着最陡的方向往下走一小步，再感受，再走。
+
+这就是梯度下降。
+
+<ConceptCard title="学习率（Learning Rate）" icon={TrendingDown} explanation="步子多大。太大 → 跳过了最低点。太小 → 走得太慢。典型值：0.001 ~ 0.1。" color="blue" />
+<ConceptCard title="批次（Batch）" icon={Zap} explanation="一次用多少样本算梯度。全量 → 稳定但慢。小批次 → 有噪音但快。典型 batch size：32 ~ 256。" color="orange" />
+<ConceptCard title="Epoch" icon={Target} explanation="把所有训练数据完整过一遍 = 1 个 Epoch。通常需要几十到几百个 Epoch。" color="purple" />
+
+<ImageCard
+  src="/images/concepts/gradient-descent-landscape.png"
+  alt="FLUX 生成：梯度下降3D地形图"
+  caption="看那个发光的小球——它从山顶滚下来，沿着紫色山谷里最陡的方向一路滑到最低点。每次训练迭代就是小球往下滚一小步。学习率控制每一步的大小。"
+/>
+
+---
+
+## 2. 动手实践
+
+### 完整的前向+反向传播
+
+```python
+import numpy as np
+
+class TrainableNet:
+    def __init__(self, input_size, hidden_size, output_size, lr=0.01):
+        self.W1 = np.random.randn(input_size, hidden_size) * 0.01
+        self.b1 = np.zeros((1, hidden_size))
+        self.W2 = np.random.randn(hidden_size, output_size) * 0.01
+        self.b2 = np.zeros((1, output_size))
+        self.lr = lr
+
+    def relu(self, x): return np.maximum(0, x)
+    def relu_derivative(self, x): return (x > 0).astype(float)
+
+    def forward(self, X):
+        self.z1 = X @ self.W1 + self.b1
+        self.h = self.relu(self.z1)
+        self.z2 = self.h @ self.W2 + self.b2
+        return self.z2  # 线性输出
+
+    def compute_loss(self, y_pred, y_true):
+        return np.mean((y_pred - y_true) ** 2)
+
+    def backward(self, X, y_true):
+        m = X.shape[0]  # 样本数
+
+        # 输出层梯度
+        d_z2 = 2 * (self.z2 - y_true) / m
+        d_W2 = self.h.T @ d_z2
+        d_b2 = np.sum(d_z2, axis=0, keepdims=True)
+
+        # 隐藏层梯度（链式法则）
+        d_h = d_z2 @ self.W2.T
+        d_z1 = d_h * self.relu_derivative(self.z1)
+        d_W1 = X.T @ d_z1
+        d_b1 = np.sum(d_z1, axis=0, keepdims=True)
+
+        # ★ 更新参数（梯度下降）
+        self.W1 -= self.lr * d_W1
+        self.b1 -= self.lr * d_b1
+        self.W2 -= self.lr * d_W2
+        self.b2 -= self.lr * d_b2
+
+    def train(self, X, y, epochs=1000, verbose=True):
+        for epoch in range(epochs):
+            y_pred = self.forward(X)
+            loss = self.compute_loss(y_pred, y)
+            self.backward(X, y)
+
+            if verbose and epoch % 200 == 0:
+                print(f"Epoch {epoch:4d}  Loss: {loss:.6f}")
+
+# XOR 训练
+X = np.array([[0,0],[0,1],[1,0],[1,1]])
+y = np.array([[0],[1],[1],[0]])
+
+net = TrainableNet(2, 4, 1, lr=0.1)
+net.train(X, y, epochs=2000)
+
+print("\n训练结果：")
+for i in range(4):
+    pred = net.forward(X[i:i+1])[0][0]
+    print(f"  {X[i]} → {pred:.4f} (真实: {y[i][0]})")
+```
+
+<SuccessBox title="如果你看到 Loss 从 0.3 降到 0.001">
+  恭喜！你刚刚从零实现了一个会「学习」的神经网络。它一开始乱猜，但通过反复「前向→算 Loss→反向→更新」，逐渐找到了 XOR 的规律。这就是 AI 学习的全部秘密——没有魔法，只有梯度下降。
+</SuccessBox>
+
+<WarningBox title="常见踩坑">
+  - **Loss 不下降**：学习率太大（震荡）或太小（不动）。试试 0.001, 0.01, 0.1 三个值
+  - **Loss 变成 NaN**：梯度爆炸了。减小学习率或增加数据归一化
+  - **训练集 Loss 低但测试集 Loss 高**：过拟合。加正则化或减少模型复杂度
+</WarningBox>
+
+---
+
+## 3. 三视角复盘
+
+<ReviewPanel type="principle">
+反向传播 = 链式法则 + 梯度下降。从输出端逐层算梯度，用梯度微调参数。整个过程可以自动完成——这就是 PyTorch/TensorFlow 的 autograd 在做的事。
+</ReviewPanel>
+
+<ReviewPanel type="money">
+理解训练过程让你能判断「微调一个模型要多少成本」。LoRA 等微调技术本质上就是在反向传播时只更新少量参数——省钱又高效。懂原理才知道怎么省成本。
+</ReviewPanel>
+
+<ReviewPanel type="education">
+**怎么给孩子讲反向传播？**「你投篮的时候，球偏左了，下次你就往右瞄一点。偏多了就往回调一点。练 1000 次之后，你就知道该用多大力、什么角度。神经网络也在做同样的事——每次猜完看看偏了多少，然后朝正确的方向调整一点。」
+</ReviewPanel>
+
+## 延伸资源
+<ResourceLink title="3Blue1Brown - Backpropagation" url="https://www.youtube.com/watch?v=Ilg3gGewQ5U" type="video" description="如果你只能看一个关于反向传播的视频，看这个。" />
+
+---
+
+## 下周预告
+下周是模块四的重点——Transformer 架构解剖。我们会逐行理解 Self-Attention 的代码，这是整个 AI 学习中最重要的概念。

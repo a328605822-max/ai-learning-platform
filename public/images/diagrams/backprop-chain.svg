@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" fill="none">
+  <rect width="800" height="400" rx="14" fill="#0f172a"/>
+  <text x="400" y="35" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="17" font-weight="bold">反向传播：计算每个参数的梯度</text>
+
+  <!-- Forward pass (top) -->
+  <text x="50" y="70" fill="#94a3b8" font-family="sans-serif" font-size="12">1. 前向传播</text>
+  <text x="130" y="70" fill="#3b82f6" font-family="monospace" font-size="11">x → W₁ → h → W₂ → ŷ</text>
+  <text x="330" y="70" fill="#94a3b8" font-family="monospace" font-size="11">Loss = (ŷ - y)²</text>
+
+  <!-- Loss -->
+  <rect x="310" y="50" width="170" height="30" rx="5" fill="#3a1a1a" stroke="#ef4444"/>
+  <text x="395" y="70" text-anchor="middle" fill="#fca5a5" font-family="monospace" font-size="11">计算 Loss = 预测值 - 真实值</text>
+
+  <text x="500" y="70" fill="#6366f1" font-family="sans-serif" font-size="18">→</text>
+
+  <!-- Backward pass -->
+  <text x="530" y="70" fill="#94a3b8" font-family="sans-serif" font-size="12">2. 反向传播</text>
+
+  <!-- Chain rule visualization -->
+  <rect x="30" y="100" width="740" height="270" rx="10" fill="#1e293b" stroke="#334155"/>
+  <text x="400" y="130" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="14" font-weight="bold">链式法则：从输出端往回算梯度</text>
+
+  <!-- Gradient chain -->
+  <text x="80" y="175" fill="#fca5a5" font-family="monospace" font-size="13">∂Loss/∂ŷ</text>
+  <text x="220" y="175" fill="#6366f1" font-family="sans-serif" font-size="18">→</text>
+  <text x="270" y="175" fill="#fbbf24" font-family="monospace" font-size="13">∂ŷ/∂W₂</text>
+  <text x="410" y="175" fill="#6366f1" font-family="sans-serif" font-size="18">→</text>
+  <text x="460" y="175" fill="#a78bfa" font-family="monospace" font-size="13">∂h/∂W₁</text>
+  <text x="600" y="175" fill="#6366f1" font-family="sans-serif" font-size="18">→</text>
+  <text x="630" y="175" fill="#93c5fd" font-family="monospace" font-size="13">∂W₁/∂Loss</text>
+
+  <!-- Gradient explanation -->
+  <rect x="40" y="205" width="140" height="50" rx="6" fill="#1e293b" stroke="#f87171"/>
+  <text x="110" y="225" text-anchor="middle" fill="#fca5a5" font-family="sans-serif" font-size="10" font-weight="bold">Loss 的梯度</text>
+  <text x="110" y="245" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="10">预测错了多少</text>
+
+  <rect x="220" y="205" width="140" height="50" rx="6" fill="#1e293b" stroke="#eab308"/>
+  <text x="290" y="225" text-anchor="middle" fill="#fbbf24" font-family="sans-serif" font-size="10" font-weight="bold">W₂ 的梯度</text>
+  <text x="290" y="245" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="10">输出层权重调整</text>
+
+  <rect x="420" y="205" width="140" height="50" rx="6" fill="#1e293b" stroke="#a855f7"/>
+  <text x="490" y="225" text-anchor="middle" fill="#d8b4fe" font-family="sans-serif" font-size="10" font-weight="bold">W₁ 的梯度</text>
+  <text x="490" y="245" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="10">隐藏层权重调整</text>
+
+  <rect x="620" y="205" width="120" height="50" rx="6" fill="#1e293b" stroke="#3b82f6"/>
+  <text x="680" y="225" text-anchor="middle" fill="#93c5fd" font-family="sans-serif" font-size="10" font-weight="bold">更新参数</text>
+  <text x="680" y="245" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="10">W -= lr × grad</text>
+
+  <!-- Key formula -->
+  <rect x="80" y="280" width="640" height="70" rx="8" fill="#1e293b" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="400" y="302" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="12" font-weight="bold">核心公式：梯度下降</text>
+  <text x="400" y="325" text-anchor="middle" fill="#93c5fd" font-family="monospace" font-size="14">W_new = W_old - η × ∂Loss/∂W</text>
+  <text x="400" y="345" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="11">η = 学习率（步子多大）  ∂Loss/∂W = 梯度（往哪走）</text>
+
+</svg>

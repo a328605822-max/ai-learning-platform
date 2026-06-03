@@ -1,0 +1,285 @@
+import { Badge } from "@/components/ui/badge";
+import { Brain, Target, Zap, Sparkles, Lightbulb, AlertTriangle, Info, Play, BookOpen, Code2, ExternalLink, Database, Search } from "lucide-react";
+
+# 第二周：向量数据库——AI 的「记忆仓库」
+
+<Badge variant="outline">模块二 · 第 2/3 周</Badge> <Badge variant="secondary" className="ml-2">预计 3.5 小时</Badge>
+
+## 本周目标
+
+搭建 Chroma 向量数据库，把文档全部向量化存起来。学会文档分块策略，实现语义搜索。
+
+**本周里程碑**：上传文档 → 分块 → 存向量 → 语义搜索可用的完整管线。
+
+---
+
+## 1. 核心概念讲解
+
+### 1.1 为什么需要向量数据库？
+
+你可能会想：把 Embedding 存到普通数据库里不行吗？
+
+实际上你可以——存成 JSON、存到 PostgreSQL 都行。但当你有了 10000 个文档块，每个是 1536 维的向量时，每次查询都需要遍历所有 10000 个向量计算相似度——太慢了。
+
+<ImageCard
+  src="/images/concepts/vector-db-concept.png"
+  alt="FLUX 生成：向量数据库工作原理"
+  caption="用户查询（左边发光球体）→ 转成向量（一串数字）→ 在存储的千万个文档向量中搜索 → 找到最相似的那些，瞬间点亮！这就是向量数据库比普通数据库快 1000 倍的秘密。"
+/>
+
+**向量数据库的核心优化**：用特殊的索引结构（如 HNSW、IVF），让你在海量向量中快速找到「最近的 K 个向量」，不需要遍历全部。
+
+<ConceptCard
+  title="Chroma"
+  icon={Database}
+  time="入门首选"
+  explanation="Chroma 是轻量级的开源向量数据库，特别适合学习和原型开发。Python 原生支持，几行代码就能跑起来。不需要 Docker、不需要配置服务器——数据直接存在本地文件里。"
+  color="green"
+/>
+
+### 1.2 文档分块（Chunking）——RAG 最关键的设计决策
+
+文档不能整本塞给 LLM。你需要把它切成小块。但怎么切？这是整个 RAG 系统最需要调优的地方。
+
+<ImageCard
+  src="/images/diagrams/chunking-compare.svg"
+  alt="文档分块策略对比：小块 vs 中块 vs 大块"
+  caption="三种分块策略的对比。推荐从 500 字的中块开始，这是大多数场景的最佳平衡点。"
+/>
+
+<KeyPoint emoji="🎯">
+  **经验法则**：从 500 字符的块 + 50 字符的重叠开始。这能解决大多数场景。之后根据实际效果微调。
+</KeyPoint>
+
+### 1.3 语义搜索 vs 关键词搜索
+
+这是理解 RAG 价值的核心对比。
+
+<ImageCard
+  src="/images/diagrams/semantic-vs-keyword.svg"
+  alt="语义搜索 vs 关键词搜索对比"
+  caption="左边是传统关键词搜索——只能找到字面匹配的文档。右边是语义搜索——能找到「意思相关」的文档，即使字面上完全不同。这就是 Embedding 的魔力。"
+/>
+
+<TipBox title="一句话总结">
+  关键词搜索找的是**字**，语义搜索找的是**意思**。RAG 用的是语义搜索，所以它能找到「小猫咪喂养」来回答「怎么养猫」——虽然两个句子共享的字只有「猫」一个。
+</TipBox>
+
+---
+
+## 2. 动手实践
+
+### 第一步：安装 Chroma
+
+```bash
+pip install chromadb
+```
+
+### 第二步：创建向量数据库，存入文档
+
+创建 `build_vector_db.py`：
+
+```python
+import chromadb
+from chromadb.utils import embedding_functions
+import os
+
+# 初始化 Chroma 客户端（数据存到本地文件夹）
+chroma_client = chromadb.PersistentClient(path="./my_vector_db")
+
+# 创建一个 Collection（相当于数据库里的「表」）
+# 使用 OpenAI 的 Embedding 函数
+collection = chroma_client.get_or_create_collection(
+    name="my_documents",
+    embedding_function=embedding_functions.OpenAIEmbeddingFunction(
+        api_key=os.getenv("OPENAI_API_KEY"),
+        model_name="text-embedding-3-small"
+    )
+)
+
+# 准备你的文档
+documents = [
+    "人工智能是计算机科学的一个重要分支，旨在让机器模拟人类智能。",
+    "机器学习是实现人工智能的主要方法，通过数据训练模型。",
+    "深度学习是机器学习的子集，使用多层神经网络。",
+    "Python 是最流行的 AI 编程语言，语法简洁生态丰富。",
+    "Streamlit 可以快速构建 AI 应用的数据界面。",
+    "我家的小猫喜欢吃鱼和鸡肉，每天要睡 16 个小时。",
+    "汽车保养需要定期更换机油和检查轮胎气压。",
+]
+
+# 添加到向量数据库
+collection.add(
+    documents=documents,
+    ids=[f"doc_{i}" for i in range(len(documents))],
+)
+
+print(f"✅ 已存入 {len(documents)} 个文档块到向量数据库！")
+print(f"📁 数据库路径：{os.path.abspath('./my_vector_db')}")
+```
+
+### 第三步：实现语义搜索
+
+创建 `search.py`：
+
+```python
+import chromadb
+from chromadb.utils import embedding_functions
+import os
+
+# 连接已有的数据库
+chroma_client = chromadb_client = chromadb.PersistentClient(path="./my_vector_db")
+collection = chroma_client.get_collection(
+    name="my_documents",
+    embedding_function=embedding_functions.OpenAIEmbeddingFunction(
+        api_key=os.getenv("OPENAI_API_KEY"),
+        model_name="text-embedding-3-small"
+    )
+)
+
+# 用户查询
+queries = [
+    "怎么让电脑变聪明？",
+    "养宠物需要注意什么？",
+    "有没有简单好用的编程语言？",
+]
+
+for query in queries:
+    print(f"\n{'='*50}")
+    print(f"🔍 查询：{query}")
+    print(f"{'='*50}")
+
+    results = collection.query(
+        query_texts=[query],
+        n_results=3,  # 返回最相似的 3 个文档
+    )
+
+    for i, (doc_id, doc_text, distance) in enumerate(zip(
+        results["ids"][0],
+        results["documents"][0],
+        results["distances"][0],
+    )):
+        print(f"  #{i+1} [{doc_id}] 距离={distance:.3f}")
+        print(f"     {doc_text[:80]}...")
+```
+
+运行 `search.py`，你会看到：
+- 「怎么让电脑变聪明？」→ 命中 AI/机器学习相关的文档
+- 「养宠物需要注意什么？」→ 命中小猫的文档
+- 「有没有简单好用的编程语言？」→ 命中 Python 的文档
+
+**即使查询的文字和文档的文字完全不同，语义搜索依然能找对！**
+
+### 第四步：文档分块工具
+
+创建 `chunker.py`——一个简单的文档分块工具：
+
+```python
+def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]:
+    """把长文本切分成有重叠的小块"""
+    chunks = []
+    start = 0
+    text_len = len(text)
+
+    while start < text_len:
+        end = min(start + chunk_size, text_len)
+
+        # 尽量在句号或换行处断开
+        if end < text_len:
+            for sep in ["。\n", "。", "\n", "，"]:
+                last_sep = text.rfind(sep, start, end)
+                if last_sep > start + chunk_size * 0.5:
+                    end = last_sep + 1
+                    break
+
+        chunk = text[start:end].strip()
+        if chunk:
+            chunks.append(chunk)
+
+        start = end - overlap  # 重叠部分
+
+    return chunks
+
+# 测试
+with open("my_article.txt", "r", encoding="utf-8") as f:
+    text = f.read()
+
+chunks = chunk_text(text, chunk_size=500, overlap=50)
+print(f"原文 {len(text)} 字 → 切成 {len(chunks)} 个块")
+for i, chunk in enumerate(chunks[:3]):
+    print(f"\n--- Chunk {i+1} ({len(chunk)}字) ---")
+    print(chunk[:150] + "...")
+```
+
+<WarningBox title="常见踩坑">
+  - **Chroma 的 Collection 名称不能重复**：用 `get_or_create_collection` 而不是 `create_collection`
+  - **Embedding API 有速率限制**：批量处理时加 `time.sleep(0.5)` 避免被限
+  - **中文分块用字符数不是字节数**：`len(text)` 返回字符数，不需要复杂处理
+  - **重叠太小会导致信息断裂**：至少保留 10% 的重叠（50 字对应 500 字块）
+</WarningBox>
+
+---
+
+## 3. Chroma 架构一览
+
+<ImageCard
+  src="/images/diagrams/chroma-architecture.svg"
+  alt="Chroma 向量数据库架构"
+  caption="Chroma 的工作流程：文档输入 → 文本分块 → Embedding 向量化 → 存储。查询时反向走一遍。"
+/>
+
+---
+
+## 4. 三视角复盘
+
+<ReviewPanel type="principle">
+
+### 原理视角
+
+向量数据库不是什么魔法——它就是「存储向量 + 快速找最近邻居」的专用数据库。Chroma 用 HNSW 索引算法实现了毫秒级的近似最近邻搜索。你不需要完全理解 HNSW 的原理，但要知道它比暴力遍历快 100-1000 倍。
+
+</ReviewPanel>
+
+<ReviewPanel type="money">
+
+### 变现视角
+
+向量数据库是 RAG 产品的「记忆层」。你收集的每个领域的文档都是一份资产——它让你的 AI 产品有了壁垒。竞争对手可以复制你的界面，但复制不了你精心整理的领域知识库。
+
+做 RAG 产品的核心竞争力 = 领域知识的质量和结构化程度，而不是代码。
+
+</ReviewPanel>
+
+<ReviewPanel type="education">
+
+### 教育视角
+
+**怎么给孩子讲向量数据库？**
+
+「想象你有一个超级大的图书馆，里面有 100 万本书。你想找'关于恐龙的书'——如果用老办法，你要一本一本翻。但向量数据库就像一个魔法索引——你说'恐龙'，它马上把所有关于恐龙、化石、侏罗纪的书都给你找来，即使这些书的书名里没有一个'恐'字。因为它理解的是'意思'，不是'字'。」
+
+</ReviewPanel>
+
+---
+
+## 5. 延伸资源
+
+<ResourceLink
+  title="Chroma 官方文档"
+  url="https://docs.trychroma.com/"
+  type="article"
+  description="Chroma 的入门指南和 API 参考。文档写得很好，5 分钟能看完 Quick Start。"
+/>
+
+<ResourceLink
+  title="LangChain Chunking Strategies"
+  url="https://python.langchain.com/docs/concepts/text_splitters/"
+  type="article"
+  description="了解不同的文档分割策略：按字符、按句子、按语义。LangChain 提供了很多开箱即用的 Splitter。"
+/>
+
+---
+
+## 下周预告
+
+下周是整个模块二的高光——把 Embedding 检索和 LLM 生成连起来，完成端到端的 RAG 系统。你的 AI 不再瞎编，而是能指着你的文档说：「根据你的 PDF 第 3 页...」。

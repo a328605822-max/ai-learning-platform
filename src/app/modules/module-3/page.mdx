@@ -1,0 +1,102 @@
+import { Badge } from "@/components/ui/badge";
+import { Brain, Target, Zap, Sparkles, Lightbulb, Info, Play, BookOpen, Code2, ExternalLink, Bot, Wrench, Shield, Repeat } from "lucide-react";
+
+# 模块三：智能体觉醒 — 让 AI 拥有「手脚」
+
+<Badge variant="outline">模块三 · 3 周</Badge> <Badge variant="secondary" className="ml-2">预计 10 小时</Badge>
+
+## 模块概述
+
+前两个模块的 AI 只能「说」——回答你的问题，或者基于文档回答问题。但这个模块要让 AI 能「做」——调用工具、搜索信息、发送邮件、操作数据。
+
+这就是 **Agent（智能体）**。2025-2026 年 AI 行业最热的方向，也是变现价值最高的赛道。
+
+<KeyPoint emoji="🎯">
+  **Agent 的本质**：给 AI 一堆工具（函数），让它自己决定什么时候用哪个、传什么参数。你的代码执行工具，结果还给 AI，AI 继续思考——如此循环直到任务完成。
+</KeyPoint>
+
+## 你将学到什么
+
+<ConceptCard
+  title="Function Calling"
+  icon={Wrench}
+  time="第 1 周"
+  explanation="AI 不直接调 API——它「说」要调哪个函数、传什么参数。你的代码去执行。这个「说→做→还」的模式是 Agent 的原子操作。"
+  color="blue"
+/>
+
+<ConceptCard
+  title="Agent 循环"
+  icon={Repeat}
+  time="第 2 周"
+  explanation="思考→行动→观察→再思考→再行动……直到任务完成。就像实习生接到任务后的工作流程——不是一步到位，而是反复尝试。"
+  color="orange"
+/>
+
+<ConceptCard
+  title="安全边界"
+  icon={Shield}
+  time="第 3 周"
+  explanation="让 AI 自动发邮件？自动花钱？自动删数据？权限边界怎么控制。Human-in-the-loop（人类确认）是目前的通用解法。"
+  color="purple"
+/>
+
+## 你将做出的项目
+
+<MilestoneCard
+  week={3}
+  title="会自动干活的 AI Agent"
+  description="一个能查天气、搜网页、发邮件、操作文件的 AI 助手。它会自己决定用什么工具、按什么顺序——你只需要下达任务目标。"
+/>
+
+## 技术栈
+
+<div className="flex flex-wrap gap-2 my-4">
+  <Badge>Python</Badge>
+  <Badge variant="secondary">Claude API Tool Use</Badge>
+  <Badge variant="outline">Streamlit</Badge>
+</div>
+
+## 为什么 Agent 是变现利器
+
+<ReviewPanel type="money">
+
+变现三层次：卖对话（卷到免费）→ 卖知识（有壁垒）→ 卖行动（高客单价）。一个能自动整理发票、生成报表、发周报的 Agent，企业愿意付 100 元/月。Agent = 能干活的产品，比纯聊天产品值钱 10 倍。
+
+</ReviewPanel>
+
+<ReviewPanel type="education">
+
+AI 不只会说话了，它现在有手有脚了——可以查资料、发通知、做事情。未来孩子和 AI 协作，就像有了一个永远不会累的助手。但要学会「管理」它——就像管理一个实习生，需要清晰的指令和安全边界。
+
+</ReviewPanel>
+
+## 三周路线
+
+<StepGuide
+  steps={[
+    {
+      title: "第一周：Function Calling",
+      description: "学习 Function Calling 的核心机制。定义工具函数，让 AI 知道什么时候调用哪个工具。理解 JSON Schema 在其中的作用。",
+    },
+    {
+      title: "第二周：Agent 循环",
+      description: "实现完整的 Agent 循环。让 AI 在多次「思考-行动-观察」中自主完成复杂任务。引入 ReAct 范式和思维链。",
+    },
+    {
+      title: "第三周：Agent 实战与安全",
+      description: "增加更多工具，加入人类确认环节。设计安全的权限控制。部署一个真正能「干活」的 Agent。",
+    },
+  ]}
+/>
+
+---
+
+## 准备开始
+
+在进入第一周之前，确保你已经：
+- 完成了模块一和模块二的项目
+- 了解 Python 函数定义和基本类型
+- 准备好尝试让 AI 「做事」而不是「说话」
+
+[开始第一周 →](/modules/module-3/week-1)

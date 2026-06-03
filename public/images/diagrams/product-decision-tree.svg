@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 380" fill="none">
+  <rect width="800" height="380" rx="14" fill="#0f172a"/>
+  <text x="400" y="35" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="17" font-weight="bold">AI 产品方向选择决策树</text>
+  <!-- Root -->
+  <rect x="280" y="55" width="240" height="36" rx="8" fill="#1e3a5f" stroke="#3b82f6"/>
+  <text x="400" y="78" text-anchor="middle" fill="#93c5fd" font-family="sans-serif" font-size="13" font-weight="bold">你想做什么 AI 产品？</text>
+  <!-- Branches -->
+  <text x="240" y="120" fill="#6366f1" font-family="sans-serif" font-size="14">↙</text>
+  <text x="540" y="120" fill="#6366f1" font-family="sans-serif" font-size="14">↘</text>
+  <!-- Left: Vertical -->
+  <rect x="40" y="135" width="200" height="50" rx="8" fill="#1a3a1a" stroke="#22c55e"/>
+  <text x="140" y="155" text-anchor="middle" fill="#86efac" font-family="sans-serif" font-size="12" font-weight="bold">垂直领域助手</text>
+  <text x="140" y="173" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="10">客服/法务/医疗/教育</text>
+  <text x="120" y="215" text-anchor="middle" fill="#6366f1" font-family="sans-serif" font-size="12">↓</text>
+  <rect x="40" y="225" width="200" height="35" rx="6" fill="#1e293b" stroke="#334155"/>
+  <text x="140" y="248" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="11">RAG + 领域知识库</text>
+  <!-- Right: Agent -->
+  <rect x="560" y="135" width="200" height="50" rx="8" fill="#3a1a3a" stroke="#a855f7"/>
+  <text x="660" y="155" text-anchor="middle" fill="#d8b4fe" font-family="sans-serif" font-size="12" font-weight="bold">AI Agent 自动化</text>
+  <text x="660" y="173" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="10">自动操作/数据/流程</text>
+  <text x="640" y="215" text-anchor="middle" fill="#6366f1" font-family="sans-serif" font-size="12">↓</text>
+  <rect x="560" y="225" width="200" height="35" rx="6" fill="#1e293b" stroke="#334155"/>
+  <text x="660" y="248" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="11">Function Calling 工具集</text>
+  <!-- Bottom summary -->
+  <rect x="120" y="295" width="560" height="65" rx="10" fill="#1e293b" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="400" y="318" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="12" font-weight="bold">选择标准</text>
+  <text x="400" y="340" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="11">你有独特的领域文档？→ 垂直助手(RAG)  |  用户需要多步操作？→ Agent  |  有大量专有数据？→ 微调</text>
+  <text x="400" y="356" text-anchor="middle" fill="#fbbf24" font-family="sans-serif" font-size="10">不确定时从最简单的做起：先做垂直助手，再慢慢加 Agent 能力</text>
+</svg>

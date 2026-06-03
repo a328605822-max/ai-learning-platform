@@ -1,0 +1,312 @@
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Brain, Wallet, Baby, Lightbulb, AlertTriangle } from "lucide-react";
+
+# 第二周：Token 与上下文——AI 的「语言」和「记忆」
+
+<Badge variant="outline">模块一 · 第 2/3 周</Badge> <Badge variant="secondary">预计 3.5 小时</Badge>
+
+## 本周目标
+
+深入理解 Token 和上下文窗口这两个核心概念。理解为什么 AI 在长对话中会「失忆」，以及计费是怎么算的。同时，开始搭建 Streamlit 界面框架。
+
+**本周里程碑**：能用 Tokenizer 工具可视化地看任意文字的 Token 拆分结果，完成 Streamlit 聊天界面的基础框架。
+
+---
+
+## 1. 核心概念讲解
+
+### 1.1 Token：AI 的「最小阅读单位」
+
+人读的是「字」，AI 读的是 **Token**。一个 Token 可能是：
+
+- 一个完整的常用词（如 "the"、"我"、"是"）
+- 一个词的一部分（如 "playing" → "play" + "ing"）
+- 一个标点符号
+- 一个空格
+
+**关键事实：中文和英文的 Token 效率完全不同。**
+
+<DataTable
+  headers={["语言", "一个 Token 大约等于", "1000 个字需要多少 Token"]}
+  rows={[
+    ["英文", "0.75 个单词，约 4 个字符", "~1300 tokens"],
+    ["中文", "1-2 个汉字", "~500-1000 tokens"],
+  ]}
+  caption="中文是高信息密度语言——同样语义的内容，中文消耗的 Token 数通常只有英文的 50%-70%，反而更省钱。"
+/>
+
+<ImageCard
+  src="/images/concepts/token-compare.svg"
+  alt="Token拆分中英文对比"
+  caption="看！同样的意思，英文「Artificial Intelligence changes the world」被拆成了 6 个 token，中文「人工智能改变世界」只用了 4 个（7 个汉字 → 4 token，平均 1.75 字/token）。中文是高信息密度语言，反而比英文（6 token）更省。这就是中文的「语言红利」！"
+/>
+
+<TipBox title="动手试试">
+  打开 [tiktokenizer.vercel.app](https://tiktokenizer.vercel.app)，分别输入：「人工智能改变世界」和「Artificial Intelligence changes the world」。观察它们的 Token 数量和拆分方式。你会发现常用中文词（如「人工」「智能」）会被合并成一个 token（平均 1.3-1.9 汉字/token），而英文一个单词常被拆成多个 token（如 Artificial → Art + ificial），中文反而更省 token。
+</TipBox>
+
+### 为什么 Token 很重要？
+
+1. **计费**：API 按 Token 数计费。你每次对话的输入和输出都会消耗 Token。
+2. **上下文窗口限制**：每个模型一次最多处理 N 个 Token。超出就直接「失忆」。
+3. **性能**：Token 越多，处理时间越长，成本越高。
+
+### 1.2 Context Window：AI 的「短期记忆」
+
+想象你在和一个朋友聊天：
+- 聊了 5 分钟，他记得你们在说什么 → 正常
+- 聊了 2 小时，他忘了你开头说过什么 → 正常的短期记忆
+- 聊了一整天，他连你叫什么名字都忘了 → 这超出了他的记忆容量
+
+**AI 的上下文窗口（Context Window）就是它的短期记忆容量。**
+
+<DataTable
+  headers={["模型", "上下文窗口", "大约等于"]}
+  rows={[
+    ["GPT-4o", "128K tokens", "一本 200 页的书"],
+    ["Claude 4 (Sonnet)", "200K tokens", "约 300 页"],
+    ["Gemini 2.5 Pro", "1M tokens", "约 1500 页（整本《三体》）"],
+  ]}
+/>
+
+**超出上下文窗口会怎样？**
+
+AI 会「忘记」对话开头的内容。在 API 实现中，每次调用都需要把整个对话历史传回去。当对话历史超过上下文窗口，你就必须截断最前面那部分。这就是为什么长对话中 AI 会越来越「健忘」。
+
+```python
+# 上下文窗口的直观理解
+context_window = [
+    {"role": "user", "content": "你好"},           # 最早的消息
+    {"role": "assistant", "content": "你好！"},
+    {"role": "user", "content": "帮我写一首诗"},
+    {"role": "assistant", "content": "春眠不觉晓..."},
+    # ... 几百轮对话之后 ...
+    {"role": "user", "content": "刚才我说了什么？"},  # AI 可能已经忘了
+]
+# 如果 token 总数超过上下文窗口，就得删掉最早的那些消息
+```
+
+### 1.3 Temperature：AI 的「创造性旋钮」
+
+Temperature（温度）控制 AI 输出是「保守」还是「有创意」。
+
+```
+Temperature = 0.0  →  极其确定，像考试答卷
+                      每次问同样的问题，答案几乎一样
+                      适合：数学计算、代码生成、事实问答
+
+Temperature = 0.7  →  平衡，最常用的设置
+                      有一定变化但不会乱来
+
+Temperature = 1.0  →  很有创意，像喝了两杯酒
+                      每次答案都可能不一样
+                      适合：创意写作、头脑风暴
+                      
+Temperature = 1.5  →  开始胡言乱语（不推荐）
+```
+
+**技术原理**：Temperature 调整的是概率分布的「平滑度」。低温度让高概率的词更高（所以更确定），高温度让概率更均匀（所以更随机）。
+
+<TipBox title="实用建议">
+  对于大多数应用场景，temperature 设置在 0.3-0.7 之间效果最好。写代码用 0-0.2，写文章用 0.6-0.8，做客服用 0.1-0.3。
+</TipBox>
+
+### 1.4 API 计费模型
+
+了解计费是做产品的基础。以下是主流服务商的价格对比（价格随时会变，以官网为准）：
+
+<DataTable
+  headers={["服务商", "推荐模型", "输入价格", "输出价格", "特点"]}
+  rows={[
+    ["OpenAI", "gpt-4o-mini", "$0.15/1M", "$0.60/1M", "性价比高，生态最成熟"],
+    ["Claude", "claude-haiku", "$0.25/1M", "$1.25/1M", "Tool Use 最强，适合 Agent"],
+    ["DeepSeek", "deepseek-chat", "¥1/1M", "¥2/1M", "国产性价比之王，中文优秀"],
+    ["智谱 GLM", "glm-4-flash", "免费额度", "免费额度", "国产入门首选，注册送token"],
+  ]}
+  caption="国内用户推荐 DeepSeek（性价比）或智谱 GLM（免费入门）。价格随时变动，请查官网最新信息。"
+/>
+
+**注意**：输出（AI 生成的文字）通常比输入（你发给 AI 的文字）贵 5 倍。所以设计 prompt 的时候要尽量精简，但让 AI 输出的时候要精准。
+
+**一个简单计算**：如果你的应用每天有 100 个用户，每人平均 10 轮对话，每轮平均 500 输入 token + 500 输出 token：
+- 每天消耗：100 × 10 × (500 + 500) = 1,000,000 tokens
+- 用 DeepSeek：输入 ¥1 + 输出 ¥2 = **约 ¥3/天**（非常便宜！）
+- 用 GPT-4o-mini：输入 $0.15 + 输出 $0.60 = **$0.75/天 ≈ ￥5/天**
+
+---
+
+## 2. 动手实践
+
+### 2.1 安装 Streamlit 并创建界面框架
+
+如果你还没安装 Streamlit：
+
+```bash
+pip install streamlit
+```
+
+创建一个新文件 `app.py`：
+
+```python
+import streamlit as st
+
+st.set_page_config(page_title="我的 AI 助手", page_icon="🤖")
+
+st.title("🤖 我的 AI 助手")
+
+# 侧边栏：参数设置
+with st.sidebar:
+    st.header("⚙️ 参数设置")
+    
+    # System Prompt
+    system_prompt = st.text_area(
+        "System Prompt（AI 的人设）",
+        value="你是一个友好的 AI 助手，乐于帮助用户解决问题。",
+        height=100
+    )
+    
+    # Temperature 滑块
+    temperature = st.slider(
+        "Temperature（创造性）",
+        min_value=0.0,
+        max_value=1.0,
+        value=0.7,
+        step=0.1,
+        help="0 = 确定保守，1 = 创意随机"
+    )
+    
+    # Max tokens
+    max_tokens = st.slider(
+        "最大回复长度（tokens）",
+        min_value=50,
+        max_value=2000,
+        value=500,
+        step=50
+    )
+    
+    # 显示当前设置
+    st.divider()
+    st.caption(f"当前温度：{temperature}")
+    st.caption(f"最大长度：{max_tokens} tokens")
+
+# 对话历史管理
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# 显示历史消息
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+# 用户输入
+if prompt := st.chat_input("输入你的问题..."):
+    # 添加用户消息
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+    
+    # TODO: 下周接入 API
+    with st.chat_message("assistant"):
+        st.markdown(f"*（这里将显示 AI 的回复。当前设置：temperature={temperature}）*")
+        st.caption(f"System Prompt: {system_prompt[:50]}...")
+```
+
+运行：
+
+```bash
+streamlit run app.py
+```
+
+浏览器应该自动打开 `http://localhost:8501`，你会看到你的第一个 AI 聊天界面！
+
+### 2.2 试试 Token 计数
+
+创建一个 `token_counter.py`，体验 Token 是怎么计数的：
+
+```python
+# 如果你用的是 OpenAI
+# pip install tiktoken
+# import tiktoken
+
+# 这里我们用一个简单的估算方法
+def estimate_tokens(text: str) -> int:
+    """粗略估算 token 数（中文一个字约 1-1.5 token，英文一个单词约 1.3 token）"""
+    chinese_chars = sum(1 for c in text if '一' <= c <= '鿿')
+    english_words = len([w for w in text.split() if w.isascii() and w.isalpha()])
+    return int(chinese_chars * 1.2 + english_words * 1.3)
+
+# 测试
+test_texts = [
+    "人工智能改变世界",
+    "Artificial Intelligence is changing the world",
+    "AI 正在改变我们的生活方式和工作方式",
+]
+
+for text in test_texts:
+    tokens = estimate_tokens(text)
+    print(f"原文：{text}")
+    print(f"估算 Token 数：{tokens}")
+    print(f"估算成本（Haiku）：${tokens * 0.25 / 1000000:.6f}")
+    print()
+```
+
+<WarningBox title="常见踩坑">
+  - **Streamlit 页面没反应**：确保你的缩进正确。Python 对缩进极其严格。
+  - **端口被占用**：`streamlit run app.py --server.port 8502` 换一个端口。
+  - **.env 文件读不到**：确保 `.env` 文件在项目根目录，且文件名就是 `.env`（没有 `.txt` 后缀）。
+</WarningBox>
+
+---
+
+## 3. 三视角复盘
+
+<ReviewBox type="principle">
+
+### 原理视角
+
+**我这周搞懂的核心概念**：Token 和上下文窗口。中文的 Token 效率比英文低（更贵），但中文更紧凑（一个字能表达更多意思）。上下文窗口限制了 AI 的「记忆时长」，这是 API 调用的硬约束。Temperature 是控制 AI「靠谱程度」的最简单方法。
+
+**我能用一句话说清吗？** Token 是 AI 的「阅读单位」，上下文窗口是 AI 的「短期记忆容量」，Temperature 是 AI 的「理性/感性旋钮」。
+
+</ReviewBox>
+
+<ReviewBox type="money">
+
+### 变现视角
+
+**成本是产品设计的硬约束。** 你设计产品时必须算清楚：每个用户的平均 Token 消耗 × 用户数 = 你的 API 成本。如果用户付你 10 元/月，但每月消耗 20 元的 API 费用，你的商业模式就不成立。**做 AI 产品的第一课不是写代码，是算成本。**
+
+降低成本的常见思路：
+- 用便宜的模型处理简单任务（Haiku）
+- 用 System Prompt 限制 AI 输出长度
+- 缓存常见问题的回答
+- 设置用户使用频率上限
+
+</ReviewBox>
+
+<ReviewBox type="education">
+
+### 教育视角
+
+**怎么给孩子讲 Token？**
+「你说话是一个字一个字说的对不对？AI 不一样，它是用'词块'来读的。比如你跟 AI 说'你好'，AI 看到的不是两个字，而是一个词块（token）。这个很像我教你认字的时候——你一开始是一个字一个字认，后来就能一眼看出一整个词了。AI 就是永远停留在了'一眼看一个词块'的阶段。」
+
+**怎么给孩子讲上下文窗口？**
+「你有没有这样的经历——老师讲了很长很长的故事，讲到后面你忘了前面讲了什么？AI 也有这个问题。它的'小脑子'一次只能记住一定量的东西，超出的就忘了。我们大人也有这个问题啊，只不过我们的容量比 AI 大一点。」
+
+</ReviewBox>
+
+---
+
+## 4. 延伸资源
+
+- **工具**：[OpenAI Tokenizer](https://platform.openai.com/tokenizer) — 官方 Token 计算工具
+- **视频**：在 B 站搜索「什么是 token」，找播放量高的视频快速过一遍
+- **阅读**：Claude 或 OpenAI 的官方 API 文档中关于 rate limits 和 pricing 的部分
+
+---
+
+## 下周预告
+
+下周是模块一的收尾——把 API 真正接入界面，实现人设定制、对话保存、Token 计数。最后部署上线。做完之后，你就能把链接发给朋友说：「看，我写的 ChatGPT！」

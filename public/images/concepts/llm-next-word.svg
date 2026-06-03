@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" fill="none">
+  <rect width="800" height="450" rx="16" fill="#0f172a"/>
+
+  <!-- Title -->
+  <text x="400" y="40" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="20" font-weight="bold">LLM 怎么「猜」下一个字？</text>
+
+  <!-- Input sequence -->
+  <rect x="60" y="80" width="140" height="48" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="130" y="109" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="14">今天</text>
+
+  <rect x="220" y="80" width="140" height="48" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="290" y="109" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="14">天气</text>
+
+  <rect x="380" y="80" width="140" height="48" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="450" y="109" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="14">真</text>
+
+  <!-- Arrow -->
+  <text x="540" y="109" fill="#64748b" font-size="24">→</text>
+
+  <!-- Output predictions -->
+  <rect x="580" y="65" width="160" height="36" rx="6" fill="#1e3a5f" stroke="#3b82f6"/>
+  <text x="660" y="89" text-anchor="middle" fill="#60a5fa" font-family="monospace" font-size="14">好 (73%)</text>
+
+  <rect x="580" y="108" width="160" height="28" rx="6" fill="#1e293b" stroke="#334155"/>
+  <text x="660" y="128" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="12">热 (15%)</text>
+
+  <rect x="580" y="142" width="160" height="28" rx="6" fill="#1e293b" stroke="#334155"/>
+  <text x="660" y="162" text-anchor="middle" fill="#64748b" font-family="monospace" font-size="12">差 (8%)</text>
+
+  <rect x="580" y="176" width="160" height="28" rx="6" fill="#1e293b" stroke="#334155"/>
+  <text x="660" y="196" text-anchor="middle" fill="#475569" font-family="monospace" font-size="12">冷 (4%)</text>
+
+  <!-- Explanation -->
+  <text x="400" y="270" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="18" font-weight="bold">训练数据中「今天天气真」后面最常见的是「好」</text>
+
+  <!-- Train data stats -->
+  <rect x="80" y="310" width="640" height="100" rx="10" fill="#1e293b" stroke="#334155"/>
+  <text x="400" y="340" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="13">模型在训练中见过的模式（示意）：</text>
+
+  <text x="160" y="375" fill="#60a5fa" font-family="monospace" font-size="13">"今天天气真好" → 7300 次</text>
+  <text x="160" y="395" fill="#a78bfa" font-family="monospace" font-size="13">"今天天气真热" → 1500 次</text>
+
+  <text x="480" y="375" fill="#64748b" font-family="monospace" font-size="13">"今天天气真差" → 800 次</text>
+  <text x="480" y="395" fill="#475569" font-family="monospace" font-size="13">"今天天气真冷" → 400 次</text>
+</svg>

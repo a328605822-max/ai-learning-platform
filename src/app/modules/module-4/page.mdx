@@ -1,0 +1,39 @@
+import { Badge } from "@/components/ui/badge";
+import { Brain, Target, Zap, Sparkles, Lightbulb, Info, Play, BookOpen, Code2, ExternalLink, Network, ArrowDown, Cog, Cpu } from "lucide-react";
+
+# 模块四：拆解黑盒 — 从零训练微型 GPT
+
+<Badge variant="outline">模块四 · 4 周</Badge> <Badge variant="secondary" className="ml-2">预计 14 小时</Badge>
+
+## 模块概述
+
+这是整个路线中最「硬核」的部分——也是让你从「会用 AI」跨越到「理解 AI」的关键。我们用纯 Python + NumPy，从零实现一个微型 GPT。
+
+不需要 GPU，不需要深度学习框架，不需要任何 AI 背景。只要你会 Python 和高中数学，就能一步步自己写出一个能生成文字的小型 GPT。
+
+<KeyPoint emoji="🎯">
+  **做完这个模块，你再也不会觉得 AI 是魔法。** 你会亲眼看到：一堆数字（参数）在矩阵乘法中流动，损失函数慢慢下降，模型从乱码逐渐生成出有意义的文字。整个过程不到 2000 行 Python。
+</KeyPoint>
+
+## 你将学到什么
+
+<ConceptCard title="神经网络本质" icon={Network} time="第 1 周" explanation="一大堆「旋钮」（参数）连成的网。输入数据，网输出预测，对比正确答案，按误差方向调节每个旋钮。反复这个过程，网络就能学会模式。" color="blue" />
+<ConceptCard title="反向传播" icon={ArrowDown} time="第 2 周" explanation="神经网络学习的核心算法。这次猜错了多少？把差值往回传，每个旋钮按比例调整。本质是链式求导。" color="orange" />
+<ConceptCard title="Transformer 架构" icon={Cog} time="第 3 周" explanation="现代 LLM 的核心发明。Self-Attention 让 AI 能「注意到」句子中不同词之间的关系——这是理解语言的关键。" color="purple" />
+<ConceptCard title="从零训练 GPT" icon={Cpu} time="第 4 周" explanation="整合前三周知识，用莎士比亚文本训练一个字符级 GPT。观察 loss 下降、生成质量提升。这是整个模块的高光时刻。" color="green" />
+
+## 你将做出的项目
+
+<MilestoneCard week={4} title="从零训练微型 GPT（字符级预测）" description="用莎士比亚全集文本，训练一个能生成「莎士比亚风格」新文本的微型 GPT。全部代码用 NumPy 手写，约 500 行核心代码。" />
+
+<ReviewPanel type="money">
+训练模型成本极高（百万美元级），但微调和应用成本极低。个人开发者的战场在「应用层」不在「模型层」。但理解模型层能让你做出更好的应用决策——知道为什么选 RAG 而不是微调，知道什么时候该用哪个模型。
+</ReviewPanel>
+
+<ReviewPanel type="education">
+AI 不是魔法，就是一大堆数学运算。它的学习过程和你学说话很像——听多了、看多了，慢慢就学会了。只不过它读过的书是你的几百万倍。
+</ReviewPanel>
+
+<StepGuide steps={[{"title": "第一周：神经网络基础", "description": "从感知机到多层网络，用 NumPy 实现前向传播。理解权重、偏置、激活函数。"}, {"title": "第二周：反向传播", "description": "手工推导反向传播的数学过程，代码实现自动梯度。理解梯度下降和链式法则。"}, {"title": "第三周：Transformer 解剖", "description": "逐行理解 Transformer 组件。重点攻克 Self-Attention——AI 学习中最重要的概念。"}, {"title": "第四周：训练微型 GPT", "description": "用莎士比亚文本训练字符级 GPT。观察 loss 下降、生成质量提升的全过程。"}]} />
+
+[开始第一周 →](/modules/module-4/week-1)

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 320" fill="none">
+  <rect width="800" height="320" rx="14" fill="#0f172a"/>
+
+  <text x="400" y="30" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="18" font-weight="bold">RAG（检索增强生成）管道</text>
+
+  <!-- Step 1: Documents -->
+  <rect x="30" y="60" width="130" height="60" rx="8" fill="#1e3a5f" stroke="#3b82f6"/>
+  <text x="95" y="85" text-anchor="middle" fill="#60a5fa" font-family="sans-serif" font-size="13" font-weight="bold">文档上传</text>
+  <text x="95" y="105" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="10">PDF / TXT / MD</text>
+
+  <!-- Arrow -->
+  <text x="175" y="95" fill="#64748b" font-size="18">→</text>
+
+  <!-- Step 2: Chunking -->
+  <rect x="195" y="60" width="130" height="60" rx="8" fill="#1e3a5f" stroke="#3b82f6"/>
+  <text x="260" y="85" text-anchor="middle" fill="#60a5fa" font-family="sans-serif" font-size="13" font-weight="bold">文档分块</text>
+  <text x="260" y="105" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="10">每块 500 tokens</text>
+
+  <!-- Arrow -->
+  <text x="340" y="95" fill="#64748b" font-size="18">→</text>
+
+  <!-- Step 3: Embedding -->
+  <rect x="360" y="55" width="150" height="70" rx="8" fill="#1a3a1a" stroke="#22c55e"/>
+  <text x="435" y="80" text-anchor="middle" fill="#86efac" font-family="sans-serif" font-size="13" font-weight="bold">向量化</text>
+  <text x="435" y="100" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="10">Embedding API</text>
+  <text x="435" y="115" text-anchor="middle" fill="#64748b" font-family="monospace" font-size="9">→[0.23, -0.67, …]</text>
+
+  <!-- Arrow -->
+  <text x="525" y="95" fill="#64748b" font-size="18">→</text>
+
+  <!-- Step 4: Vector DB -->
+  <rect x="545" y="55" width="140" height="70" rx="8" fill="#3a1a3a" stroke="#a855f7"/>
+  <text x="615" y="80" text-anchor="middle" fill="#d8b4fe" font-family="sans-serif" font-size="13" font-weight="bold">向量数据库</text>
+  <text x="615" y="100" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="10">Chroma / Pinecone</text>
+  <text x="615" y="115" text-anchor="middle" fill="#64748b" font-family="monospace" font-size="9">存储 + 检索</text>
+
+  <!-- Second row: Query flow -->
+  <rect x="80" y="170" width="130" height="50" rx="8" fill="#3a2a1a" stroke="#f59e0b"/>
+  <text x="145" y="193" text-anchor="middle" fill="#fcd34d" font-family="sans-serif" font-size="13" font-weight="bold">用户提问</text>
+  <text x="145" y="210" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="10">"什么是 RAG？"</text>
+
+  <text x="225" y="200" fill="#64748b" font-size="18">→</text>
+  <text x="260" y="218" fill="#64748b" font-family="monospace" font-size="10">向量化</text>
+
+  <rect x="320" y="170" width="130" height="50" rx="8" fill="#3a1a3a" stroke="#a855f7"/>
+  <text x="385" y="193" text-anchor="middle" fill="#d8b4fe" font-family="sans-serif" font-size="13" font-weight="bold">相似度检索</text>
+  <text x="385" y="210" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="10">Top-K 文档片段</text>
+
+  <text x="465" y="200" fill="#64748b" font-size="18">→</text>
+
+  <rect x="490" y="160" width="240" height="70" rx="8" fill="#1a2a3a" stroke="#06b6d4"/>
+  <text x="610" y="185" text-anchor="middle" fill="#67e8f9" font-family="sans-serif" font-size="13" font-weight="bold">LLM 生成回答</text>
+  <text x="610" y="203" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="10">System: 基于以下资料回答...</text>
+  <text x="610" y="220" text-anchor="middle" fill="#64748b" font-family="monospace" font-size="9">检索片段 + 用户问题 → AI</text>
+
+  <!-- Bottom note -->
+  <rect x="140" y="270" width="520" height="32" rx="6" fill="#1e293b" stroke="#334155"/>
+  <text x="400" y="290" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="11">关键优势：AI 基于「参考资料」回答，而非凭记忆瞎编 —— 大幅减少幻觉</text>
+</svg>

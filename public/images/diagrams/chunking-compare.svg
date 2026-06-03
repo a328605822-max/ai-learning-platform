@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" fill="none">
+  <rect width="800" height="400" rx="14" fill="#0f172a"/>
+  <text x="400" y="35" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="17" font-weight="bold">文档分块策略对比</text>
+
+  <!-- Small chunks -->
+  <rect x="30" y="55" width="230" height="320" rx="10" fill="#1e293b" stroke="#334155"/>
+  <text x="145" y="85" text-anchor="middle" fill="#f87171" font-family="sans-serif" font-size="14" font-weight="bold">小块（100 字）</text>
+
+  <rect x="45" y="100" width="200" height="24" rx="4" fill="#1e3a5f" stroke="#3b82f6"/>
+  <text x="145" y="117" text-anchor="middle" fill="#93c5fd" font-family="sans-serif" font-size="10">人工智能是计算机科学</text>
+  <rect x="45" y="130" width="200" height="24" rx="4" fill="#1e3a5f" stroke="#3b82f6"/>
+  <text x="145" y="147" text-anchor="middle" fill="#93c5fd" font-family="sans-serif" font-size="10">的一个重要分支，旨在</text>
+  <rect x="45" y="160" width="200" height="24" rx="4" fill="#1e3a5f" stroke="#3b82f6"/>
+  <text x="145" y="177" text-anchor="middle" fill="#93c5fd" font-family="sans-serif" font-size="10">让机器能够模拟人类</text>
+  <rect x="45" y="190" width="200" height="24" rx="4" fill="#1e3a5f" stroke="#3b82f6"/>
+  <text x="145" y="207" text-anchor="middle" fill="#93c5fd" font-family="sans-serif" font-size="10">的智能行为。机器学</text>
+  <rect x="45" y="220" width="200" height="24" rx="4" fill="#1e3a5f" stroke="#3b82f6"/>
+  <text x="145" y="237" text-anchor="middle" fill="#93c5fd" font-family="sans-serif" font-size="10">习是实现人工智能的</text>
+  <rect x="45" y="250" width="200" height="24" rx="4" fill="#1e3a5f" stroke="#3b82f6"/>
+  <text x="145" y="267" text-anchor="middle" fill="#93c5fd" font-family="sans-serif" font-size="10">主要方法之一。深度</text>
+
+  <text x="145" y="310" text-anchor="middle" fill="#f87171" font-family="sans-serif" font-size="10">检索精度高</text>
+  <text x="145" y="328" text-anchor="middle" fill="#f87171" font-family="sans-serif" font-size="10">但丢失上下文联系</text>
+  <text x="145" y="346" text-anchor="middle" fill="#f87171" font-family="sans-serif" font-size="10">可能把一句话切两半</text>
+
+  <!-- Medium chunks -->
+  <rect x="285" y="55" width="230" height="320" rx="10" fill="#1e293b" stroke="#22c55e" stroke-width="2"/>
+  <text x="400" y="85" text-anchor="middle" fill="#34d399" font-family="sans-serif" font-size="14" font-weight="bold">中块（500 字）推荐</text>
+
+  <rect x="300" y="105" width="200" height="55" rx="4" fill="#1a3a1a" stroke="#22c55e"/>
+  <text x="310" y="122" fill="#86efac" font-family="sans-serif" font-size="10">人工智能是计算机科学的一</text>
+  <text x="310" y="137" fill="#86efac" font-family="sans-serif" font-size="10">个重要分支，旨在让机器能</text>
+  <text x="310" y="152" fill="#86efac" font-family="sans-serif" font-size="10">够模拟人类的智能行为。</text>
+
+  <rect x="300" y="175" width="200" height="55" rx="4" fill="#1a3a1a" stroke="#22c55e"/>
+  <text x="310" y="192" fill="#86efac" font-family="sans-serif" font-size="10">机器学习是实现人工智能的</text>
+  <text x="310" y="207" fill="#86efac" font-family="sans-serif" font-size="10">主要方法之一。深度学习作</text>
+  <text x="310" y="222" fill="#86efac" font-family="sans-serif" font-size="10">为机器学习的子集。</text>
+
+  <rect x="300" y="245" width="200" height="55" rx="4" fill="#1a3a1a" stroke="#22c55e"/>
+  <text x="310" y="262" fill="#86efac" font-family="sans-serif" font-size="10">大语言模型是深度学习的重</text>
+  <text x="310" y="277" fill="#86efac" font-family="sans-serif" font-size="10">要应用，通过海量文本训练</text>
+  <text x="310" y="292" fill="#86efac" font-family="sans-serif" font-size="10">来理解和生成自然语言。</text>
+
+  <text x="400" y="325" text-anchor="middle" fill="#34d399" font-family="sans-serif" font-size="10">检索精度和上下文</text>
+  <text x="400" y="342" text-anchor="middle" fill="#34d399" font-family="sans-serif" font-size="10">的最佳平衡点</text>
+
+  <!-- Large chunks -->
+  <rect x="540" y="55" width="230" height="320" rx="10" fill="#1e293b" stroke="#334155"/>
+  <text x="655" y="85" text-anchor="middle" fill="#fbbf24" font-family="sans-serif" font-size="14" font-weight="bold">大块（2000 字）</text>
+
+  <rect x="555" y="105" width="200" height="120" rx="4" fill="#3a2a0a" stroke="#eab308"/>
+  <text x="565" y="122" fill="#fde68a" font-family="sans-serif" font-size="10">人工智能是计算机科学的一</text>
+  <text x="565" y="137" fill="#fde68a" font-family="sans-serif" font-size="10">个重要分支，旨在让机器能</text>
+  <text x="565" y="152" fill="#fde68a" font-family="sans-serif" font-size="10">够模拟人类的智能行为。机</text>
+  <text x="565" y="167" fill="#fde68a" font-family="sans-serif" font-size="10">器学习是实现人工智能的主</text>
+  <text x="565" y="182" fill="#fde68a" font-family="sans-serif" font-size="10">要方法之一。深度学习作为</text>
+  <text x="565" y="197" fill="#fde68a" font-family="sans-serif" font-size="10">机器学习的子集，通过多层</text>
+  <text x="565" y="212" fill="#fde68a" font-family="sans-serif" font-size="10">神经网络提取特征...</text>
+
+  <rect x="555" y="240" width="200" height="55" rx="4" fill="#3a2a0a" stroke="#eab308"/>
+  <text x="565" y="257" fill="#fde68a" font-family="sans-serif" font-size="10">大语言模型是深度学习的重</text>
+  <text x="565" y="272" fill="#fde68a" font-family="sans-serif" font-size="10">要应用，通过海量文本...</text>
+
+  <text x="655" y="325" text-anchor="middle" fill="#fbbf24" font-family="sans-serif" font-size="10">上下文完整</text>
+  <text x="655" y="342" text-anchor="middle" fill="#fbbf24" font-family="sans-serif" font-size="10">但检索不够精准</text>
+  <text x="655" y="359" text-anchor="middle" fill="#fbbf24" font-family="sans-serif" font-size="10">包含太多不相关信息</text>
+
+</svg>
