@@ -6,15 +6,21 @@
 
 - **目标用户**：会 Python 的开发者，每周 2-4 小时
 - **技术栈**：Next.js 16 + TypeScript + Tailwind CSS + shadcn/ui + MDX + Framer Motion + p5.js + Mermaid
-- **部署**：Vercel（免费）
-- **构建**：35 个页面，全部静态生成
+- **部署**：Cloudflare Pages（国内可访问）+ Vercel（备选）
+- **构建**：35 个页面，全部静态生成（`output: "export"`）
+- **生产 URL**：https://ai-learning-platform-81u.pages.dev（Cloudflare）/ https://ai-learning-platform-zeta-jet.vercel.app（Vercel）
+- **GitHub**：https://github.com/a328605822-max/ai-learning-platform
 
 ## 关键命令
 
 ```bash
 npm run dev      # 开发服务器
-npm run build    # 生产构建（35页，全部通过）
+npm run build    # 生产构建 → out/ 静态文件
 npx shadcn@latest add <component> -y  # 添加 shadcn 组件
+
+# 部署
+npx wrangler pages deploy out/ --project-name=ai-learning-platform --branch=master  # Cloudflare Pages
+vercel deploy --prod    # Vercel（需翻墙）
 ```
 
 ## 项目结构
@@ -246,6 +252,16 @@ public/images/concepts/
 - 限流：免费版约 6 次/分钟，请求间隔 12s
 - 需绕过代理：`proxies={"http": None, "https": None}`
 - SVG 手绘：免费，暗色主题 `#0f172a`，<5KB/张
+
+### 部署说明
+
+- **Cloudflare Pages**（主，国内可访问）：`npx wrangler pages deploy out/ --project-name=ai-learning-platform --branch=master`
+  - 生产 URL：https://ai-learning-platform-81u.pages.dev
+  - 自定义域名：Dash → Workers & Pages → ai-learning-platform → Custom domains
+- **Vercel**（备选，需翻墙）：`vercel deploy --prod`
+  - 生产 URL：https://ai-learning-platform-zeta-jet.vercel.app
+- 项目使用 `output: "export"` 静态导出，生成 `out/` 目录
+- 首次部署需先创建项目：`npx wrangler pages project create ai-learning-platform --production-branch=master`
 
 ### 已知问题
 - M3 W3 `safety-boundary.png` 未生成（Replicate 余额不足，用 `human-in-the-loop.svg` 替代）
